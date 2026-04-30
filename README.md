@@ -2,6 +2,8 @@
 
 Dashboard financeiro pessoal feito com Java, Spring Boot e uma interface web responsiva.
 
+![Preview do dashboard SaldoX](docs/images/saldox-preview.png)
+
 ## Funcionalidades
 
 - Cadastro e login de usuarios
