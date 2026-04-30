@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SaldoX</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%2300897b'/%3E%3Ctext x='32' y='42' text-anchor='middle' font-family='Arial,sans-serif' font-size='34' font-weight='900' fill='white'%3ES%3C/text%3E%3C/svg%3E">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <section id="authScreen" class="auth-screen">
+        <form id="authForm" class="auth-card" autocomplete="off">
+            <div class="auth-brand">
+                <span>S</span>
+                <h1>SaldoX</h1>
+                <p>Acesse seu painel financeiro com seus dados salvos.</p>
+            </div>
+
+            <label id="nomeLabel">Nome
+                <input id="authNome" type="text" name="saldox_nome" placeholder="Digite seu nome" autocomplete="off">
+            </label>
+
+            <label>Email
+                <input id="authEmail" type="email" name="saldox_email" placeholder="seuemail@dominio.com" autocomplete="off" required>
+            </label>
+
+            <label>Senha
+                <input id="authSenha" type="password" name="saldox_senha" placeholder="Digite sua senha" autocomplete="new-password" required>
+            </label>
+
+            <button id="authSubmit" type="submit">Entrar</button>
+            <button id="preencherDemo" class="demo-button" type="button">Preencher conta demo</button>
+            <button id="alternarAuth" class="link-button" type="button">Criar nova conta</button>
+            <small id="authAjuda">Campos vazios para voc&ecirc; entrar com sua conta.</small>
+        </form>
+    </section>
+
+    <aside class="sidebar">
+        <div class="logo"><span class="logo-mark">X</span><strong>SaldoX</strong></div>
+
+        <nav class="menu">
+            <a class="active" href="#" data-title="Resumo"><span>$</span>Resumo</a>
+            <a href="#transacoes" data-title="Transa&ccedil;&otilde;es"><span>&uarr;</span>Transa&ccedil;&otilde;es</a>
+            <a href="#categorias" data-title="Categoraia"><span>&amp;</span>Categoraia</a>
+            <a href="#planejamento" data-title="Or&ccedil;amentos"><span>&Theta;</span>Or&ccedil;amentos</a>
+            <a href="#planejamento" data-title="Metas"><span>&#10003;</span>Metas</a>
+            <a href="#relatorios" data-title="Relat&oacute;rios"><span>&#9632;</span>Relat&oacute;rios</a>
+            <a href="#perfil" data-title="Perfil"><span>&#9881;</span>Perfil</a>
+            <a href="#sobre" data-title="Sobre"><span>i</span>Sobre</a>
+            <a id="bancoH2Link" href="/banco-h2.html" target="_blank" data-title="Banco H2"><span>DB</span>Banco H2</a>
+        </nav>
+
+        <div class="profile">
+            <div id="perfilAvatar" class="avatar">L</div>
+            <div>
+                <strong id="perfilNome">Ol&aacute;, Lucas!</strong>
+                <small id="perfilEmail">lucas@email.com</small>
+            </div>
+        </div>
+    </aside>
+
+    <main class="app">
+        <header class="topbar">
+            <div class="title-row">
+                <button id="menuToggle" class="icon-btn" type="button" aria-label="Alternar menu">=</button>
+                <strong id="pageTitle">Resumo</strong>
+            </div>
+
+            <div class="top-actions">
+                <button id="filtrarMesAtual" class="date-btn" type="button">Filtrar m&ecirc;s atual</button>
+                <button id="alternarTema" class="icon-btn" type="button" aria-label="Alternar tema">T</button>
+                <button id="atualizar" class="icon-btn" type="button">A</button>
+                <button id="sair" class="close-btn" type="button">x</button>
+            </div>
+        </header>
+
+        <section class="command-center">
+            <div>
+                <small>Ambiente</small>
+                <strong id="apiStatus">API online</strong>
+                <span>H2 local em arquivo, salvando seus dados</span>
+            </div>
+            <div class="quick-actions">
+                <button id="atalhoReceita" type="button">Nova receita</button>
+                <button id="atalhoDespesa" type="button">Nova despesa</button>
+                <button id="atalhoRelatorio" type="button">Ver relat&oacute;rio</button>
+                <button id="exportarJson" class="secondary-button" type="button">Exportar JSON</button>
+                <button id="importarJsonBotao" class="secondary-button" type="button">Importar backup</button>
+                <button id="abrirBancoH2" class="secondary-button" type="button">Abrir H2</button>
+                <input id="importarJsonInput" type="file" accept="application/json" hidden>
+            </div>
+        </section>
+
+        <section class="hero-panel">
+            <div>
+                <small>Sistema financeiro inteligente</small>
+                <h1>Gest&atilde;o financeira com cara de produto real</h1>
+                <p>Controle receitas, despesas, parcelas, vencimentos, alertas e relat&oacute;rios em uma experi&ecirc;ncia responsiva para PC, notebook e celular.</p>
+            </div>
+            <div class="hero-badges">
+                <span>Projeto Java Spring Boot</span>
+                <span>H2 persistente</span>
+                <span>Dashboard</span>
+                <span>Responsivo</span>
+            </div>
+        </section>
+
+        <section id="emptyState" class="empty-state-panel">
+            <div>
+                <small>Conta nova</small>
+                <h2>Comece montando seu hist&oacute;rico financeiro</h2>
+                <p>As estat&iacute;sticas aparecem conforme voc&ecirc; cadastra receitas e despesas. Para apresentar o projeto, voc&ecirc; tamb&eacute;m pode carregar exemplos.</p>
+            </div>
+            <div class="empty-actions">
+                <button id="primeiraReceita" type="button">Cadastrar receita</button>
+                <button id="primeiraDespesa" type="button">Cadastrar despesa</button>
+                <button id="carregarExemplos" class="secondary-button" type="button">Carregar dados exemplo</button>
+            </div>
+        </section>
+
+        <section class="summary-cards">
+            <article class="summary-card saldo">
+                <div class="card-head">
+                    <span class="round-icon">S</span>
+                    <div>
+                        <small>Saldo</small>
+                        <strong id="saldo">R$ 0,00</strong>
+                    </div>
+                </div>
+                <p class="trend up">+ 12,5% <span>em rela&ccedil;&atilde;o a Abr/2025</span></p>
+                <div class="sparkline teal"></div>
+            </article>
+
+            <article class="summary-card receita">
+                <div class="card-head">
+                    <span class="round-icon">R</span>
+                    <div>
+                        <small>Receitas</small>
+                        <strong id="receitas">R$ 0,00</strong>
+                    </div>
+                </div>
+                <p class="trend up">+ 8,3% <span>em rela&ccedil;&atilde;o a Abr/2025</span></p>
+                <div class="sparkline green"></div>
+            </article>
+
+            <article class="summary-card despesa">
+                <div class="card-head">
+                    <span class="round-icon">D</span>
+                    <div>
+                        <small>Despesas</small>
+                        <strong id="despesas">R$ 0,00</strong>
+                    </div>
+                </div>
+                <p class="trend down">- 5,7% <span>em rela&ccedil;&atilde;o a Abr/2025</span></p>
+                <div class="sparkline orange"></div>
+            </article>
+
+            <article class="summary-card total">
+                <div class="card-head">
+                    <span class="round-icon">T</span>
+                    <div>
+                        <small>Transa&ccedil;&otilde;es</small>
+                        <strong id="quantidade">0</strong>
+                    </div>
+                </div>
+                <p class="trend up">+ 14,8% <span>em rela&ccedil;&atilde;o a Abr/2025</span></p>
+                <div class="sparkline blue"></div>
+            </article>
+        </section>
+
+        <section class="main-grid">
+            <section id="transacoes" class="panel transactions-panel">
+                <div class="panel-title">
+                    <h2>Transa&ccedil;&otilde;es</h2>
+                    <div class="panel-actions">
+                        <button id="novaReceita" class="secondary-button" type="button">Receita</button>
+                        <button id="novaDespesa" class="secondary-button" type="button">Despesa</button>
+                        <button id="exportarCsv" type="button">Exportar CSV</button>
+                    </div>
+                </div>
+
+                <div class="filters">
+                    <input id="filtroBusca" type="search" placeholder="Buscar por descri&ccedil;&atilde;o ou categoria">
+                    <select id="filtroTipo" aria-label="Tipo">
+                        <option value="">Todos os tipos</option>
+                        <option value="RECEITA">Receitas</option>
+                        <option value="DESPESA">Despesas</option>
+                    </select>
+                    <select id="filtroCategoria" aria-label="Categoria">
+                        <option value="">Todas categorias</option>
+                    </select>
+                    <input id="filtroMes" type="month" aria-label="M&ecirc;s">
+                    <input id="filtroDataInicio" type="date" aria-label="Data inicial">
+                    <input id="filtroDataFim" type="date" aria-label="Data final">
+                    <input id="filtroValorMin" type="number" min="0" step="0.01" placeholder="Valor m&iacute;n.">
+                    <input id="filtroValorMax" type="number" min="0" step="0.01" placeholder="Valor m&aacute;x.">
+                    <button id="limparFiltros" class="secondary-button" type="button">Limpar</button>
+                </div>
+
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Descri&ccedil;&atilde;o</th>
+                                <th>Categoria</th>
+                                <th>Tipo</th>
+                                <th>Status</th>
+                                <th>Vencimento</th>
+                                <th>Parcela</th>
+                                <th>Valor</th>
+                                <th>A&ccedil;&otilde;es</th>
+                            </tr>
+                        </thead>
+                        <tbody id="listaTransacoes"></tbody>
+                    </table>
+                </div>
+                <a class="see-all" href="#transacoes">Ver todas as transa&ccedil;&otilde;es</a>
+            </section>
+
+            <aside class="right-column">
+                <section id="categorias" class="panel category-panel">
+                    <div class="panel-title">
+                        <h2>Categorias</h2>
+                        <span id="totalCategorias">Este m&ecirc;s</span>
+                    </div>
+                    <div class="category-content">
+                        <div id="donutChart" class="donut"></div>
+                        <div id="categoriaLista" class="category-list"></div>
+                    </div>
+                </section>
+
+                <section class="panel monthly-panel">
+                    <div class="panel-title">
+                        <h2>Resumo mensal</h2>
+                        <span>12 meses</span>
+                    </div>
+                    <div class="legend">
+                        <span><i class="dot receita-dot"></i>Receitas</span>
+                        <span><i class="dot despesa-dot"></i>Despesas</span>
+                    </div>
+                    <div id="graficoMensal" class="line-chart"></div>
+                </section>
+            </aside>
+        </section>
+
+        <section id="relatorios" class="report-grid">
+            <article class="panel report-panel">
+                <div class="panel-title">
+                    <h2>Relat&oacute;rios executivos</h2>
+                    <div class="panel-actions">
+                        <button id="imprimirRelatorio" type="button">PDF / imprimir</button>
+                        <button id="copiarResumo" class="secondary-button" type="button">Copiar resumo</button>
+                    </div>
+                </div>
+                <div class="report-kpis">
+                    <div>
+                        <small>Economia do per&iacute;odo</small>
+                        <strong id="economiaPeriodo">R$ 0,00</strong>
+                    </div>
+                    <div>
+                        <small>Gasto m&eacute;dio di&aacute;rio</small>
+                        <strong id="gastoDiario">R$ 0,00</strong>
+                    </div>
+                    <div>
+                        <small>Previs&atilde;o de saldo</small>
+                        <strong id="previsaoSaldo">R$ 0,00</strong>
+                    </div>
+                </div>
+                <div id="relatorioCategorias" class="report-list"></div>
+            </article>
+
+            <article class="panel alerts-panel">
+                <div class="panel-title">
+                    <h2>Central de alertas</h2>
+                    <span>Tempo real</span>
+                </div>
+                <div id="alertasLista" class="alerts-list"></div>
+            </article>
+        </section>
+
+        <section id="planejamento" class="info-grid">
+            <article class="panel insight-panel">
+                <div class="panel-title">
+                    <h2>Resumo inteligente</h2>
+                    <span>Insights</span>
+                </div>
+                <div class="insight-list">
+                    <div>
+                        <small>Maior despesa</small>
+                        <strong id="maiorDespesa">R$ 0,00</strong>
+                        <p id="maiorDespesaTexto">Nenhuma despesa encontrada.</p>
+                    </div>
+                    <div>
+                        <small>M&eacute;dia de gasto</small>
+                        <strong id="mediaGasto">R$ 0,00</strong>
+                        <p>Valor m&eacute;dio das despesas filtradas.</p>
+                    </div>
+                    <div>
+                        <small>Resultado</small>
+                        <strong id="resultadoStatus">Equilibrado</strong>
+                        <p id="resultadoTexto">Acompanhe receitas e despesas.</p>
+                    </div>
+                </div>
+            </article>
+
+            <article class="panel goal-panel">
+                <div class="panel-title">
+                    <h2>Or&ccedil;amento do m&ecirc;s</h2>
+                    <span>Meta: R$ 2.000,00</span>
+                </div>
+                <div class="goal-number">
+                    <strong id="orcamentoUsado">0%</strong>
+                    <span id="orcamentoTexto">Nenhum gasto registrado.</span>
+                </div>
+                <label>Meta mensal
+                    <input id="metaMensal" type="number" min="1" step="0.01" value="2000">
+                </label>
+                <div class="progress">
+                    <span id="orcamentoBarra"></span>
+                </div>
+            </article>
+        </section>
+
+        <form id="formulario" class="panel form-panel">
+            <div class="panel-title">
+                <h2>Adicionar transa&ccedil;&atilde;o</h2>
+                <span id="modo">Nova</span>
+            </div>
+
+            <input type="hidden" id="transacaoId">
+
+            <label>Descri&ccedil;&atilde;o
+                <input id="descricao" type="text" placeholder="Ex: Mercado" required>
+            </label>
+
+            <label>Valor
+                <input id="valor" type="number" min="0.01" step="0.01" placeholder="0.00" required>
+            </label>
+
+            <label>Data
+                <input id="data" type="date" required>
+            </label>
+
+            <label>Vencimento
+                <input id="vencimento" type="date">
+            </label>
+
+            <label>Categoria
+                <input id="categoria" type="text" list="listaCategoriasDatalist" placeholder="Ex: Alimenta&ccedil;&atilde;o" required>
+                <datalist id="listaCategoriasDatalist">
+                    <option value="Alimenta&ccedil;&atilde;o"></option>
+                    <option value="Transporte"></option>
+                    <option value="Moradia"></option>
+                    <option value="Lazer"></option>
+                    <option value="Trabalho"></option>
+                </datalist>
+            </label>
+
+            <label>Tipo
+                <select id="tipo" required>
+                    <option value="RECEITA">Receita</option>
+                    <option value="DESPESA">Despesa</option>
+                </select>
+            </label>
+
+            <label>Status
+                <select id="status">
+                    <option value="PAGA">Paga</option>
+                    <option value="PENDENTE">Pendente</option>
+                    <option value="ATRASADA">Atrasada</option>
+                </select>
+            </label>
+
+            <div class="installment-box">
+                <label class="check-row">
+                    <input id="parcelado" type="checkbox">
+                    Compra parcelada mensal
+                </label>
+                <label class="check-row">
+                    <input id="cartaoCredito" type="checkbox">
+                    Cart&atilde;o de cr&eacute;dito
+                </label>
+                <label>Parcelas
+                    <input id="quantidadeParcelas" type="number" min="2" max="60" value="12">
+                </label>
+                <small>Ex: celular de R$ 440 por 12 meses cria uma despesa por m&ecirc;s.</small>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit">Salvar</button>
+                <button id="cancelar" type="button" class="secondary">Cancelar</button>
+            </div>
+        </form>
+
+        <footer class="tip">
+            <span>!</span>
+            <strong>Dica financeira:</strong>
+            <p id="dicaTexto">Use os filtros para analisar um per&iacute;odo espec&iacute;fico e exporte os dados quando precisar.</p>
+            <button id="fecharDica" type="button" aria-label="Fechar dica">x</button>
+        </footer>
+
+        <section id="perfil" class="panel profile-panel">
+            <div class="panel-title">
+                <h2>Perfil do usu&aacute;rio</h2>
+                <span>Conta</span>
+            </div>
+            <div class="profile-grid">
+                <label>Nome
+                    <input id="perfilNomeInput" type="text">
+                </label>
+                <label>Email
+                    <input id="perfilEmailInput" type="email">
+                </label>
+                <label>Nova senha
+                    <input id="perfilSenhaInput" type="password" placeholder="Opcional">
+                </label>
+                <button id="salvarPerfil" type="button">Salvar perfil</button>
+            </div>
+        </section>
+
+        <section id="sobre" class="about-panel">
+            <div class="about-copy">
+                <small>Sobre o projeto</small>
+                <h2>SaldoX foi criado para demonstrar uma aplica&ccedil;&atilde;o completa de portf&oacute;lio.</h2>
+                <p>O sistema une backend Java, banco persistente, regras de neg&oacute;cio e uma interface moderna. Ele simula um produto usado no dia a dia para organizar contas, parcelas, metas e relat&oacute;rios.</p>
+            </div>
+            <div class="about-cards">
+                <article>
+                    <strong>Backend</strong>
+                    <span>Java, Spring Boot, JPA e valida&ccedil;&otilde;es.</span>
+                </article>
+                <article>
+                    <strong>Dados</strong>
+                    <span>H2 em arquivo, com login e transa&ccedil;&otilde;es salvas.</span>
+                </article>
+                <article>
+                    <strong>Interface</strong>
+                    <span>Dashboard responsivo, tema escuro e relat&oacute;rios.</span>
+                </article>
+            </div>
+        </section>
+
+        <section id="configuracoes" class="panel settings-panel">
+            <div class="panel-title">
+                <h2>Configura&ccedil;&otilde;es</h2>
+                <span>Local</span>
+            </div>
+            <p>Os dados ficam salvos em H2 local no arquivo do projeto. Para acessar o banco, abra o H2 e use JDBC URL <strong>jdbc:h2:file:./data/fintrack</strong>, usu&aacute;rio <strong>sa</strong> e senha vazia.</p>
+            <div class="settings-actions">
+                <button id="abrirBancoH2Config" type="button">Abrir Banco H2</button>
+                <button id="copiarDadosH2" class="secondary-button" type="button">Copiar dados de acesso</button>
+            </div>
+        </section>
+    </main>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <section id="modalConfirmacao" class="modal-overlay" aria-hidden="true">
+        <div class="modal-card">
+            <small>A&ccedil;&atilde;o sens&iacute;vel</small>
+            <h2>Excluir transa&ccedil;&atilde;o?</h2>
+            <p>Essa opera&ccedil;&atilde;o remove o registro do banco e atualiza todos os indicadores.</p>
+            <div class="modal-actions">
+                <button id="cancelarExclusao" class="secondary-button" type="button">Cancelar</button>
+                <button id="confirmarExclusao" class="danger-button" type="button">Excluir</button>
+            </div>
+        </div>
+    </section>
+
+    <script src="app.js"></script>
+</body>
+</html>

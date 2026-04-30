@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SaldoX | Banco H2</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="db-body">
+    <main class="db-shell">
+        <header class="db-header">
+            <div>
+                <small>Banco local</small>
+                <h1>Visualizador H2</h1>
+                <p>Dados reais carregados do banco local persistente do SaldoX.</p>
+            </div>
+            <a href="/" class="db-back">Voltar ao dashboard</a>
+        </header>
+
+        <section class="db-status">
+            <article>
+                <small>JDBC URL</small>
+                <strong>jdbc:h2:file:./data/fintrack</strong>
+            </article>
+            <article>
+                <small>Usu&aacute;rio</small>
+                <strong>sa</strong>
+            </article>
+            <article>
+                <small>Status</small>
+                <strong id="dbStatus">Conectando...</strong>
+            </article>
+        </section>
+
+        <section class="panel db-panel">
+            <div class="panel-title">
+                <h2>Tabelas</h2>
+                <button id="recarregarBanco" type="button">Recarregar</button>
+            </div>
+            <div id="listaTabelas" class="db-tabs"></div>
+            <div class="table-wrap">
+                <table>
+                    <thead id="cabecalhoBanco"></thead>
+                    <tbody id="linhasBanco"></tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <script src="banco-h2.js"></script>
+</body>
+</html>
