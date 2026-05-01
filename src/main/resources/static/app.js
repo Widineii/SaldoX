@@ -166,24 +166,6 @@ function emailPareceReal(email) {
     return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email);
 }
 
-function iniciarRastroCursor() {
-    let ultimoBrilho = 0;
-    document.addEventListener("pointermove", (event) => {
-        const agora = Date.now();
-        if (window.innerWidth < 900 || agora - ultimoBrilho < 45) {
-            return;
-        }
-
-        ultimoBrilho = agora;
-        const brilho = document.createElement("span");
-        brilho.className = "cursor-trail";
-        brilho.style.left = `${event.clientX}px`;
-        brilho.style.top = `${event.clientY}px`;
-        document.body.appendChild(brilho);
-        window.setTimeout(() => brilho.remove(), 650);
-    });
-}
-
 function atualizarPerfil() {
     if (!usuarioLogado()) {
         authScreen.classList.add("open");
@@ -1183,7 +1165,6 @@ menuLinks.forEach((link) => {
 });
 
 aplicarTemaSalvo();
-iniciarRastroCursor();
 nomeLabel.style.display = "none";
 data.value = hoje();
 atualizarPerfil();
