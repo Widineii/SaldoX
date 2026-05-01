@@ -5,7 +5,10 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Lob;
 import lombok.Data;
+
+import java.time.LocalDateTime;
 
 @Data
 @Entity
@@ -22,4 +25,11 @@ public class Usuario {
 
     @Column(nullable = false)
     private String senha;
+
+    private String resetToken;
+
+    private LocalDateTime resetTokenExpiracao;
+
+    @Lob
+    private String avatarUrl;
 }

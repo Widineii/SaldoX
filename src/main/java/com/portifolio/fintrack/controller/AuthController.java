@@ -2,7 +2,10 @@ package com.portifolio.fintrack.controller;
 
 import com.portifolio.fintrack.dto.AuthRequest;
 import com.portifolio.fintrack.dto.AuthResponse;
+import com.portifolio.fintrack.dto.MensagemResponse;
 import com.portifolio.fintrack.dto.PerfilRequest;
+import com.portifolio.fintrack.dto.RecuperacaoSenhaRequest;
+import com.portifolio.fintrack.dto.RedefinirSenhaRequest;
 import com.portifolio.fintrack.dto.RegistroRequest;
 import com.portifolio.fintrack.service.AuthService;
 import jakarta.validation.Valid;
@@ -12,7 +15,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/auth")
@@ -35,8 +40,23 @@ public class AuthController {
         return authService.login(request);
     }
 
+    @PostMapping("/recuperar-senha")
+    public MensagemResponse recuperarSenha(@Valid @RequestBody RecuperacaoSenhaRequest request) {
+        return authService.solicitarRecuperacao(request);
+    }
+
+    @PostMapping("/redefinir-senha")
+    public MensagemResponse redefinirSenha(@Valid @RequestBody RedefinirSenhaRequest request) {
+        return authService.redefinirSenha(request);
+    }
+
     @PutMapping("/perfil/{usuarioId}")
     public AuthResponse atualizarPerfil(@PathVariable Long usuarioId, @Valid @RequestBody PerfilRequest request) {
         return authService.atualizarPerfil(usuarioId, request);
+    }
+
+    @PostMapping("/avatar/{usuarioId}")
+    public AuthResponse salvarAvatar(@PathVariable Long usuarioId, @RequestParam("avatar") MultipartFile avatar) {
+        return authService.salvarAvatar(usuarioId, avatar);
     }
 }

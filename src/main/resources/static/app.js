@@ -1,7 +1,9 @@
 const api = {
     transacoes: "/transacoes",
     authLogin: "/auth/login",
-    authRegistrar: "/auth/registrar"
+    authRegistrar: "/auth/registrar",
+    recuperarSenha: "/auth/recuperar-senha",
+    redefinirSenha: "/auth/redefinir-senha"
 };
 
 const authScreen = document.querySelector("#authScreen");
@@ -13,6 +15,11 @@ const nomeLabel = document.querySelector("#nomeLabel");
 const authSubmit = document.querySelector("#authSubmit");
 const alternarAuth = document.querySelector("#alternarAuth");
 const preencherDemo = document.querySelector("#preencherDemo");
+const recuperarSenhaBotao = document.querySelector("#recuperarSenhaBotao");
+const resetBox = document.querySelector("#resetBox");
+const resetToken = document.querySelector("#resetToken");
+const resetSenha = document.querySelector("#resetSenha");
+const confirmarResetSenha = document.querySelector("#confirmarResetSenha");
 const authAjuda = document.querySelector("#authAjuda");
 const perfilAvatar = document.querySelector("#perfilAvatar");
 const perfilNome = document.querySelector("#perfilNome");
@@ -63,6 +70,7 @@ const cancelarExclusao = document.querySelector("#cancelarExclusao");
 const perfilNomeInput = document.querySelector("#perfilNomeInput");
 const perfilEmailInput = document.querySelector("#perfilEmailInput");
 const perfilSenhaInput = document.querySelector("#perfilSenhaInput");
+const avatarInput = document.querySelector("#avatarInput");
 const emptyState = document.querySelector("#emptyState");
 const metaMensal = document.querySelector("#metaMensal");
 const importarJsonInput = document.querySelector("#importarJsonInput");
@@ -71,6 +79,7 @@ let transacoesAtuais = [];
 let authModoRegistro = false;
 let usuario = JSON.parse(localStorage.getItem("fintrackUsuario") || "null");
 let idPendenteExclusao = null;
+let graficoMensalChart = null;
 
 const formatoMoeda = new Intl.NumberFormat("pt-BR", {
     style: "currency",
@@ -102,6 +111,36 @@ function mostrarMensagem(texto, tipo = "success") {
     mostrarMensagem.timer = window.setTimeout(() => {
         toast.className = "toast";
     }, 3000);
+}
+
+function authHeader() {
+    return usuario?.token ? { Authorization: `Bearer ${usuario.token}` } : {};
+}
+
+function jsonHeaders() {
+    return {
+        "Content-Type": "application/json",
+        ...authHeader()
+    };
+}
+
+async function apiFetch(url, options = {}) {
+    const resposta = await fetch(url, {
+        ...options,
+        headers: {
+            ...authHeader(),
+            ...(options.headers || {})
+        }
+    });
+
+    if (resposta.status === 401 || resposta.status === 403) {
+        localStorage.removeItem("fintrackUsuario");
+        usuario = null;
+        authScreen.classList.add("open");
+        throw new Error("Sessao expirada. Entre novamente.");
+    }
+
+    return resposta;
 }
 
 async function mensagemErroApi(resposta, fallback) {
@@ -154,7 +193,11 @@ function atualizarPerfil() {
     authScreen.classList.remove("open");
     perfilNome.innerHTML = `Ol&aacute;, ${usuario.nome}!`;
     perfilEmail.textContent = usuario.email;
-    perfilAvatar.textContent = usuario.nome.charAt(0).toUpperCase();
+    if (usuario.avatarUrl) {
+        perfilAvatar.innerHTML = `<img src="${usuario.avatarUrl}" alt="Avatar de ${usuario.nome}">`;
+    } else {
+        perfilAvatar.textContent = usuario.nome.charAt(0).toUpperCase();
+    }
     perfilNomeInput.value = usuario.nome;
     perfilEmailInput.value = usuario.email;
 }
@@ -196,12 +239,73 @@ async function autenticar(event) {
     }
 }
 
+async function solicitarRecuperacaoSenha() {
+    const email = authEmail.value.trim();
+
+    if (!emailPareceReal(email)) {
+        mostrarMensagem("Digite seu email para gerar o codigo de recuperacao.", "error");
+        authEmail.focus();
+        return;
+    }
+
+    try {
+        const resposta = await fetch(api.recuperarSenha, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email })
+        });
+
+        if (!resposta.ok) {
+            throw new Error(await mensagemErroApi(resposta, "Nao foi possivel gerar o codigo."));
+        }
+
+        const dados = await resposta.json();
+        resetBox.hidden = false;
+        resetToken.value = dados.token || "";
+        authAjuda.innerHTML = `Codigo de demo gerado: <strong>${dados.token}</strong>. Digite a nova senha abaixo.`;
+        mostrarMensagem("Codigo de recuperacao gerado.");
+    } catch (erro) {
+        mostrarMensagem(erro.message, "error");
+    }
+}
+
+async function confirmarNovaSenha() {
+    if (!resetToken.value.trim() || resetSenha.value.length < 6) {
+        mostrarMensagem("Informe o codigo e uma senha com pelo menos 6 caracteres.", "error");
+        return;
+    }
+
+    try {
+        const resposta = await fetch(api.redefinirSenha, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                token: resetToken.value.trim(),
+                novaSenha: resetSenha.value
+            })
+        });
+
+        if (!resposta.ok) {
+            throw new Error(await mensagemErroApi(resposta, "Nao foi possivel redefinir a senha."));
+        }
+
+        resetSenha.value = "";
+        resetToken.value = "";
+        resetBox.hidden = true;
+        mostrarMensagem("Senha redefinida. Agora voce pode entrar.");
+    } catch (erro) {
+        mostrarMensagem(erro.message, "error");
+    }
+}
+
 function alternarModoAuth() {
     authModoRegistro = !authModoRegistro;
     nomeLabel.style.display = authModoRegistro ? "grid" : "none";
     authSubmit.textContent = authModoRegistro ? "Criar conta" : "Entrar";
     alternarAuth.textContent = authModoRegistro ? "Ja tenho conta" : "Criar nova conta";
     preencherDemo.style.display = authModoRegistro ? "none" : "block";
+    recuperarSenhaBotao.style.display = authModoRegistro ? "none" : "block";
+    resetBox.hidden = true;
     authAjuda.textContent = authModoRegistro
         ? "Use um email completo. Envio de codigo real precisa de SMTP configurado."
         : "Demo: lucas@email.com / 123456";
@@ -305,7 +409,7 @@ async function carregarTransacoes() {
     }
 
     try {
-        const resposta = await fetch(`${api.transacoes}?${queryTransacoes()}`);
+        const resposta = await apiFetch(`${api.transacoes}?${queryTransacoes()}`);
 
         if (!resposta.ok) {
             throw new Error("Erro ao carregar transacoes.");
@@ -437,49 +541,62 @@ function renderizarGraficoMensal(transacoes) {
         }
     });
 
-    const largura = 650;
-    const altura = 245;
-    const paddingX = 44;
-    const paddingY = 26;
-    const maximo = 16000;
-    const areaAltura = altura - 62;
+    if (!window.Chart) {
+        return;
+    }
 
-    const pontos = (valores) => valores.map((item, index) => {
-        const x = paddingX + index * ((largura - paddingX - 18) / (valores.length - 1));
-        const y = paddingY + areaAltura - ((item / maximo) * areaAltura);
-        return `${x},${y}`;
-    }).join(" ");
+    if (graficoMensalChart) {
+        graficoMensalChart.destroy();
+    }
 
-    const bolinhas = (valores, cor) => valores.map((item, index) => {
-        const x = paddingX + index * ((largura - paddingX - 18) / (valores.length - 1));
-        const y = paddingY + areaAltura - ((item / maximo) * areaAltura);
-        return `<circle cx="${x}" cy="${y}" r="4" fill="${cor}" />`;
-    }).join("");
-
-    const labels = meses.map((mes, index) => {
-        const x = paddingX + index * ((largura - paddingX - 18) / (meses.length - 1));
-        return `<text x="${x}" y="232" text-anchor="middle" fill="#7b8790" font-size="10">${mes}</text>`;
-    }).join("");
-
-    graficoMensal.innerHTML = `
-        <svg class="chart-svg" viewBox="0 0 ${largura} ${altura}" role="img" aria-label="Resumo mensal">
-            <text x="4" y="34" fill="#7b8790" font-size="11">R$ 16.000</text>
-            <text x="4" y="80" fill="#7b8790" font-size="11">R$ 12.000</text>
-            <text x="4" y="126" fill="#7b8790" font-size="11">R$ 8.000</text>
-            <text x="4" y="172" fill="#7b8790" font-size="11">R$ 4.000</text>
-            <text x="4" y="218" fill="#7b8790" font-size="11">R$ 0</text>
-            <line x1="${paddingX}" y1="28" x2="${largura - 10}" y2="28" stroke="#edf2f4" />
-            <line x1="${paddingX}" y1="74" x2="${largura - 10}" y2="74" stroke="#edf2f4" />
-            <line x1="${paddingX}" y1="120" x2="${largura - 10}" y2="120" stroke="#edf2f4" />
-            <line x1="${paddingX}" y1="166" x2="${largura - 10}" y2="166" stroke="#edf2f4" />
-            <line x1="${paddingX}" y1="212" x2="${largura - 10}" y2="212" stroke="#edf2f4" />
-            <polyline points="${pontos(receitas)}" fill="none" stroke="#21b99a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
-            <polyline points="${pontos(despesas)}" fill="none" stroke="#ff7043" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
-            ${bolinhas(receitas, "#21b99a")}
-            ${bolinhas(despesas, "#ff7043")}
-            ${labels}
-        </svg>
-    `;
+    graficoMensalChart = new Chart(graficoMensal, {
+        type: "line",
+        data: {
+            labels: meses,
+            datasets: [
+                {
+                    label: "Receitas",
+                    data: receitas,
+                    borderColor: "#20f3d5",
+                    backgroundColor: "rgba(32, 243, 213, 0.16)",
+                    tension: 0.38,
+                    fill: true
+                },
+                {
+                    label: "Despesas",
+                    data: despesas,
+                    borderColor: "#ff6f91",
+                    backgroundColor: "rgba(255, 111, 145, 0.14)",
+                    tension: 0.38,
+                    fill: true
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    labels: {
+                        color: "#c7d6ea"
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    ticks: { color: "#c7d6ea" },
+                    grid: { color: "rgba(199, 214, 234, 0.10)" }
+                },
+                y: {
+                    ticks: {
+                        color: "#c7d6ea",
+                        callback: (valor) => formatoMoeda.format(valor)
+                    },
+                    grid: { color: "rgba(199, 214, 234, 0.10)" }
+                }
+            }
+        }
+    });
 }
 
 function renderizarInsights(transacoes) {
@@ -659,9 +776,9 @@ async function salvar(event) {
 
     try {
         if (deveParcelar) {
-            const respostas = await Promise.all(Array.from({ length: totalParcelas }, (_, index) => fetch(api.transacoes, {
+            const respostas = await Promise.all(Array.from({ length: totalParcelas }, (_, index) => apiFetch(api.transacoes, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: jsonHeaders(),
                 body: JSON.stringify(montarPayloadParcelado(index + 1, totalParcelas))
             })));
 
@@ -669,9 +786,9 @@ async function salvar(event) {
                 throw new Error("Erro ao salvar parcelas.");
             }
         } else {
-            const resposta = await fetch(url, {
+            const resposta = await apiFetch(url, {
                 method: metodo,
-                headers: { "Content-Type": "application/json" },
+                headers: jsonHeaders(),
                 body: JSON.stringify(montarPayload())
             });
 
@@ -701,9 +818,9 @@ async function carregarDadosExemplo() {
     ];
 
     try {
-        await Promise.all(exemplos.map((transacao) => fetch(api.transacoes, {
+        await Promise.all(exemplos.map((transacao) => apiFetch(api.transacoes, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: jsonHeaders(),
             body: JSON.stringify({ ...transacao, usuarioId: usuario.usuarioId })
         })));
         mostrarMensagem("Dados de exemplo carregados.");
@@ -730,9 +847,9 @@ function editar(transacao) {
 }
 
 async function marcarComoPago(transacao) {
-    const resposta = await fetch(`${api.transacoes}/${transacao.id}`, {
+    const resposta = await apiFetch(`${api.transacoes}/${transacao.id}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: jsonHeaders(),
         body: JSON.stringify({ ...transacao, status: "PAGA", usuarioId: usuario.usuarioId })
     });
 
@@ -757,7 +874,7 @@ async function confirmarExclusaoPendente() {
     }
 
     try {
-        const resposta = await fetch(`${api.transacoes}/${idPendenteExclusao}?usuarioId=${usuario.usuarioId}`, {
+        const resposta = await apiFetch(`${api.transacoes}/${idPendenteExclusao}?usuarioId=${usuario.usuarioId}`, {
             method: "DELETE"
         });
 
@@ -843,9 +960,9 @@ async function importarBackup(arquivo) {
         const conteudo = JSON.parse(await arquivo.text());
         const transacoes = Array.isArray(conteudo) ? conteudo : conteudo.transacoes || [];
 
-        await Promise.all(transacoes.map((transacao) => fetch(api.transacoes, {
+        await Promise.all(transacoes.map((transacao) => apiFetch(api.transacoes, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: jsonHeaders(),
             body: JSON.stringify({
                 descricao: transacao.descricao,
                 valor: transacao.valor,
@@ -890,12 +1007,16 @@ function copiarResumoExecutivo() {
 
 authForm.addEventListener("submit", autenticar);
 alternarAuth.addEventListener("click", alternarModoAuth);
+recuperarSenhaBotao?.addEventListener("click", solicitarRecuperacaoSenha);
+confirmarResetSenha?.addEventListener("click", confirmarNovaSenha);
 preencherDemo.addEventListener("click", () => {
     authModoRegistro = false;
     nomeLabel.style.display = "none";
     authSubmit.textContent = "Entrar";
     alternarAuth.textContent = "Criar nova conta";
     preencherDemo.style.display = "block";
+    recuperarSenhaBotao.style.display = "block";
+    resetBox.hidden = true;
     authAjuda.textContent = "Demo preenchida. Clique em Entrar.";
     authEmail.value = "lucas@email.com";
     authSenha.value = "123456";
@@ -966,9 +1087,9 @@ document.querySelector("#sair").addEventListener("click", () => {
 });
 
 document.querySelector("#salvarPerfil")?.addEventListener("click", async () => {
-    const resposta = await fetch(`/auth/perfil/${usuario.usuarioId}`, {
+    const resposta = await apiFetch(`/auth/perfil/${usuario.usuarioId}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: jsonHeaders(),
         body: JSON.stringify({
             nome: perfilNomeInput.value.trim() || usuario.nome,
             email: perfilEmailInput.value.trim() || usuario.email,
@@ -986,6 +1107,34 @@ document.querySelector("#salvarPerfil")?.addEventListener("click", async () => {
     perfilSenhaInput.value = "";
     atualizarPerfil();
     mostrarMensagem("Perfil salvo no banco.");
+});
+
+avatarInput?.addEventListener("change", async () => {
+    if (!avatarInput.files?.[0]) {
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append("avatar", avatarInput.files[0]);
+
+    try {
+        const resposta = await apiFetch(`/auth/avatar/${usuario.usuarioId}`, {
+            method: "POST",
+            body: formData
+        });
+
+        if (!resposta.ok) {
+            mostrarMensagem(await mensagemErroApi(resposta, "Nao foi possivel salvar o avatar."), "error");
+            return;
+        }
+
+        usuario = await resposta.json();
+        localStorage.setItem("fintrackUsuario", JSON.stringify(usuario));
+        atualizarPerfil();
+        mostrarMensagem("Avatar salvo no perfil.");
+    } finally {
+        avatarInput.value = "";
+    }
 });
 
 metaMensal?.addEventListener("input", () => {

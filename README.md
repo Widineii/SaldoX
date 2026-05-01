@@ -7,6 +7,9 @@ Dashboard financeiro pessoal feito com Java, Spring Boot e uma interface web res
 ## Funcionalidades
 
 - Cadastro e login de usuarios
+- Autenticacao com JWT
+- Recuperacao de senha por codigo de redefinicao
+- Upload de avatar do usuario
 - Senhas criptografadas com BCrypt
 - Cadastro de receitas e despesas
 - Listagem, edicao e exclusao de transacoes
@@ -14,10 +17,12 @@ Dashboard financeiro pessoal feito com Java, Spring Boot e uma interface web res
 - Cards com saldo, receitas, despesas e total de transacoes
 - Grafico de categorias por despesa
 - Grafico de resumo mensal
+- Grafico mensal com Chart.js
 - Mensagens de sucesso e erro na tela
 - Tratamento centralizado de erros na API
 - DTOs para entrada e saida de dados
 - Configuracao local com H2 e profile para PostgreSQL
+- Testes de services e controllers
 
 ## Usuario demo
 

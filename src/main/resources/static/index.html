@@ -30,7 +30,13 @@
 
             <button id="authSubmit" type="submit">Entrar</button>
             <button id="preencherDemo" class="demo-button" type="button">Preencher conta demo</button>
+            <button id="recuperarSenhaBotao" class="demo-button" type="button">Recuperar senha</button>
             <button id="alternarAuth" class="link-button" type="button">Criar nova conta</button>
+            <div id="resetBox" class="reset-box" hidden>
+                <input id="resetToken" type="text" placeholder="Codigo recebido">
+                <input id="resetSenha" type="password" placeholder="Nova senha">
+                <button id="confirmarResetSenha" type="button">Redefinir senha</button>
+            </div>
             <small id="authAjuda">Campos vazios para voc&ecirc; entrar com sua conta.</small>
         </form>
     </section>
@@ -239,7 +245,7 @@
                         <span><i class="dot receita-dot"></i>Receitas</span>
                         <span><i class="dot despesa-dot"></i>Despesas</span>
                     </div>
-                    <div id="graficoMensal" class="line-chart"></div>
+                    <canvas id="graficoMensal" class="line-chart"></canvas>
                 </section>
             </aside>
         </section>
@@ -415,6 +421,9 @@
                 <label>Nova senha
                     <input id="perfilSenhaInput" type="password" placeholder="Opcional">
                 </label>
+                <label>Avatar
+                    <input id="avatarInput" type="file" accept="image/*">
+                </label>
                 <button id="salvarPerfil" type="button">Salvar perfil</button>
             </div>
         </section>
@@ -468,6 +477,7 @@
         </div>
     </section>
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="app.js"></script>
 </body>
 </html>
