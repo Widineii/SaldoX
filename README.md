@@ -1,28 +1,41 @@
 # SaldoX
 
-Dashboard financeiro pessoal feito com Java, Spring Boot e uma interface web responsiva.
+![Status](https://img.shields.io/badge/status-portfolio%20ready-16a34a)
+![Java](https://img.shields.io/badge/Java-17+-f97316)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.0.6-22c55e)
+![Database](https://img.shields.io/badge/database-H2%20%7C%20PostgreSQL-2563eb)
+![Deploy](https://img.shields.io/badge/deploy-Docker%20%7C%20Render-9333ea)
+
+Dashboard financeiro pessoal desenvolvido com **Java, Spring Boot e interface web responsiva**.
+
+O projeto simula uma aplicacao real para controle de receitas e despesas, com autenticacao, cadastro de transacoes, filtros, graficos, resumo financeiro e estrutura preparada para deploy.
 
 ![Preview do dashboard SaldoX](docs/images/saldox-preview.png)
+
+## Destaques do projeto
+
+- API com **Spring Boot**, **Spring Security** e **JPA/Hibernate**
+- Autenticacao com **JWT** e senhas criptografadas com **BCrypt**
+- Cadastro, edicao, exclusao e filtros de transacoes
+- Dashboard com saldo, receitas, despesas, total de transacoes e graficos
+- DTOs para entrada e saida de dados
+- Tratamento centralizado de erros
+- Ambiente local com **H2** e profile para **PostgreSQL**
+- Estrutura com **Docker** e `render.yaml` para publicacao
+- Testes de services e controllers
 
 ## Funcionalidades
 
 - Cadastro e login de usuarios
-- Autenticacao com JWT
 - Recuperacao de senha por codigo de redefinicao
 - Upload de avatar do usuario
-- Senhas criptografadas com BCrypt
 - Cadastro de receitas e despesas
 - Listagem, edicao e exclusao de transacoes
-- Filtros no backend por texto, tipo e mes
-- Cards com saldo, receitas, despesas e total de transacoes
+- Filtros por texto, tipo e mes
+- Cards de resumo financeiro
 - Grafico de categorias por despesa
-- Grafico de resumo mensal
-- Grafico mensal com Chart.js
+- Grafico de resumo mensal com Chart.js
 - Mensagens de sucesso e erro na tela
-- Tratamento centralizado de erros na API
-- DTOs para entrada e saida de dados
-- Configuracao local com H2 e profile para PostgreSQL
-- Testes de services e controllers
 
 ## Usuario demo
 
@@ -34,8 +47,8 @@ Senha: 123456
 ## Tecnologias
 
 - Java 17+
-- Spring Boot
-- Spring Web
+- Spring Boot 4
+- Spring Web MVC
 - Spring Security
 - Spring Data JPA
 - Bean Validation
@@ -43,6 +56,7 @@ Senha: 123456
 - PostgreSQL
 - Maven
 - HTML, CSS e JavaScript
+- Chart.js
 - Docker
 
 ## Como rodar localmente
@@ -53,13 +67,13 @@ No Windows:
 mvnw.cmd spring-boot:run
 ```
 
-Depois abra:
+Depois acesse:
 
 ```text
 http://localhost:8080
 ```
 
-Se a porta 8080 estiver ocupada:
+Se a porta `8080` estiver ocupada:
 
 ```bash
 mvnw.cmd spring-boot:run -Dspring-boot.run.arguments=--server.port=8081
@@ -149,10 +163,29 @@ DATABASE_USERNAME=usuario
 DATABASE_PASSWORD=senha
 ```
 
+## Como apresentar em entrevista
+
+Este projeto mostra capacidade de construir uma aplicacao web completa, passando por:
+
+- modelagem de entidades e relacionamentos
+- criacao de API REST
+- autenticacao e seguranca
+- persistencia com banco de dados
+- consumo dos dados em uma interface web
+- preparacao para deploy
+
 ## Proximas melhorias
 
-- Autenticacao com JWT
-- Recuperacao de senha
-- Upload de avatar
-- Graficos com Chart.js ou Recharts
-- Mais testes de controller
+- Publicar uma versao online para demonstracao
+- Adicionar documentacao Swagger/OpenAPI
+- Criar mais testes de integracao
+- Melhorar cobertura de testes dos controllers
+- Adicionar exportacao de relatorios em CSV ou PDF
+
+## Autor
+
+Desenvolvido por **Widinei Martins**.
+
+- GitHub: [github.com/Widineii](https://github.com/Widineii)
+- LinkedIn: [linkedin.com/in/widineimartinsdev](https://www.linkedin.com/in/widineimartinsdev)
+- WhatsApp: [w.app/widineii](https://w.app/widineii)
