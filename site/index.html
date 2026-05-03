@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="SaldoX: dashboard financeiro pessoal com Java, Spring Boot, JWT, JPA, PostgreSQL e interface web responsiva." />
+    <title>SaldoX | Dashboard Financeiro</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="#inicio" aria-label="SaldoX inicio">
+        <span>SX</span>
+        SaldoX
+      </a>
+      <nav aria-label="Navegacao principal">
+        <a href="#recursos">Recursos</a>
+        <a href="#stack">Stack</a>
+        <a href="#deploy">Deploy</a>
+        <a class="nav-cta" href="https://github.com/Widineii/SaldoX" target="_blank" rel="noreferrer">GitHub</a>
+      </nav>
+    </header>
+
+    <main id="inicio">
+      <section class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Projeto backend em Java para portfolio</p>
+          <h1>Controle financeiro com Spring Boot, JWT e dashboard responsivo.</h1>
+          <p class="lead">
+            O SaldoX simula uma aplicacao real para organizar receitas e despesas, com autenticacao,
+            transacoes, filtros, graficos, resumo financeiro e estrutura pronta para banco PostgreSQL.
+          </p>
+          <div class="actions">
+            <a class="button primary" href="https://github.com/Widineii/SaldoX" target="_blank" rel="noreferrer">Ver codigo</a>
+            <a class="button secondary" href="#deploy">Como rodar</a>
+          </div>
+        </div>
+
+        <figure class="preview">
+          <img src="https://raw.githubusercontent.com/Widineii/SaldoX/main/docs/images/saldox-preview.png" alt="Preview do dashboard financeiro SaldoX" />
+          <figcaption>Dashboard com saldo, receitas, despesas, filtros e graficos.</figcaption>
+        </figure>
+      </section>
+
+      <section class="metrics" aria-label="Destaques tecnicos">
+        <div>
+          <strong>JWT</strong>
+          <span>Autenticacao</span>
+        </div>
+        <div>
+          <strong>JPA</strong>
+          <span>Persistencia</span>
+        </div>
+        <div>
+          <strong>Docker</strong>
+          <span>Deploy</span>
+        </div>
+        <div>
+          <strong>H2/Postgres</strong>
+          <span>Banco de dados</span>
+        </div>
+      </section>
+
+      <section class="section" id="recursos">
+        <div class="section-title">
+          <p class="eyebrow">Funcionalidades</p>
+          <h2>Fluxo completo de uma aplicacao financeira</h2>
+        </div>
+        <div class="grid">
+          <article>
+            <h3>Usuarios e seguranca</h3>
+            <p>Cadastro, login, JWT, Spring Security e senhas criptografadas com BCrypt.</p>
+          </article>
+          <article>
+            <h3>Transacoes</h3>
+            <p>Cadastro, edicao, exclusao e filtros por texto, tipo e mes.</p>
+          </article>
+          <article>
+            <h3>Dashboard</h3>
+            <p>Resumo de saldo, receitas, despesas, total de transacoes e graficos com Chart.js.</p>
+          </article>
+          <article>
+            <h3>Arquitetura</h3>
+            <p>DTOs, services, repositories, validacoes e tratamento centralizado de erros.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section split" id="stack">
+        <div class="section-title">
+          <p class="eyebrow">Stack</p>
+          <h2>Tecnologias usadas</h2>
+        </div>
+        <ul class="tags" aria-label="Lista de tecnologias">
+          <li>Java 17</li>
+          <li>Spring Boot 4</li>
+          <li>Spring Security</li>
+          <li>Spring Data JPA</li>
+          <li>PostgreSQL</li>
+          <li>H2 Database</li>
+          <li>Maven</li>
+          <li>Docker</li>
+          <li>HTML</li>
+          <li>CSS</li>
+          <li>JavaScript</li>
+          <li>Chart.js</li>
+        </ul>
+      </section>
+
+      <section class="section deploy" id="deploy">
+        <div>
+          <p class="eyebrow">Executar projeto</p>
+          <h2>Backend completo via Spring Boot</h2>
+          <p>
+            Esta pagina no Netlify funciona como vitrine publica. Para testar o sistema completo,
+            rode o backend localmente ou publique em Render/Railway com PostgreSQL.
+          </p>
+        </div>
+        <div class="terminal" aria-label="Comandos para rodar o projeto">
+          <code>mvnw.cmd spring-boot:run</code>
+          <code>http://localhost:8080</code>
+          <code>Email: lucas@email.com</code>
+          <code>Senha: 123456</code>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <p>Desenvolvido por Widinei Martins.</p>
+      <a href="https://www.linkedin.com/in/widineimartinsdev" target="_blank" rel="noreferrer">LinkedIn</a>
+    </footer>
+  </body>
+</html>

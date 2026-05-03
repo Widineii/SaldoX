@@ -152,11 +152,14 @@ O projeto inclui:
 
 - `Dockerfile`
 - `render.yaml`
+- `netlify.toml`
 - profile `postgres`
 
 Guia completo:
 
 - [Deploy no Render](DEPLOY_RENDER.md)
+
+Tambem ha uma vitrine estatica para publicar no Netlify usando a pasta `site/`.
 
 Para publicar, conecte o repositorio no Render/Railway e configure as variaveis:
 
