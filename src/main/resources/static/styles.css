@@ -55,6 +55,29 @@ body {
     line-height: 1.45;
 }
 
+body,
+.app,
+.panel,
+.summary-card,
+.command-center,
+.hero-panel,
+.empty-state-panel,
+.about-panel,
+.auth-card,
+.form-panel,
+.filters,
+.report-kpis,
+.insight-list,
+.profile-grid,
+.about-cards,
+.category-content,
+.panel-actions,
+.quick-actions,
+.empty-actions,
+.top-actions {
+    min-width: 0;
+}
+
 body::before {
     content: "";
     position: fixed;
@@ -167,6 +190,7 @@ label {
 .auth-card {
     display: grid;
     width: min(430px, 100%);
+    max-width: 100%;
     gap: 15px;
     padding: clamp(24px, 4vw, 36px);
     border: 1px solid rgba(181, 232, 255, 0.22);
@@ -377,6 +401,8 @@ label {
 
 .app {
     margin-left: 276px;
+    width: calc(100% - 276px);
+    max-width: 100%;
     padding: 0 22px 28px;
     transition: margin-left 0.2s ease;
 }
@@ -387,6 +413,7 @@ label {
 
 .sidebar-collapsed .app {
     margin-left: 0;
+    width: 100%;
 }
 
 .topbar {
@@ -707,6 +734,7 @@ label {
 
 .panel {
     padding: 20px;
+    width: 100%;
 }
 
 .panel-title {
@@ -728,6 +756,15 @@ label {
     grid-template-columns: minmax(220px, 1.4fr) repeat(3, minmax(130px, 0.8fr));
     gap: 10px;
     margin-bottom: 14px;
+}
+
+.filters > *,
+.form-panel > *,
+.report-kpis > *,
+.insight-list > *,
+.profile-grid > *,
+.about-cards > * {
+    min-width: 0;
 }
 
 .filters button {
@@ -1317,6 +1354,7 @@ tbody tr:hover {
 @media (max-width: 1050px) {
     .app {
         margin-left: 0;
+        width: 100%;
     }
 
     .sidebar {
@@ -1384,6 +1422,7 @@ tbody tr:hover {
 
     .top-actions {
         width: 100%;
+        justify-content: space-between;
     }
 
     .top-actions .date-btn {

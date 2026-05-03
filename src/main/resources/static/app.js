@@ -107,7 +107,7 @@ function formatarData(valor) {
 
 function mostrarMensagem(texto, tipo = "success") {
     toast.className = `toast show ${tipo}`;
-    toast.innerHTML = texto;
+    toast.textContent = texto;
     window.clearTimeout(mostrarMensagem.timer);
     mostrarMensagem.timer = window.setTimeout(() => {
         toast.className = "toast";
@@ -132,6 +132,21 @@ function setLoading(ativo) {
     carregando = Math.max(carregando, 0);
     document.body.classList.toggle("is-loading", carregando > 0);
     loadingOverlay?.setAttribute("aria-hidden", carregando > 0 ? "false" : "true");
+}
+
+function setAuthHelpMessage(texto, destaque = null) {
+    authAjuda.textContent = "";
+
+    if (!destaque) {
+        authAjuda.textContent = texto;
+        return;
+    }
+
+    authAjuda.append(document.createTextNode(texto));
+    const strong = document.createElement("strong");
+    strong.textContent = destaque;
+    authAjuda.appendChild(strong);
+    authAjuda.append(document.createTextNode(". Digite a nova senha abaixo."));
 }
 
 function authHeader() {
@@ -269,7 +284,7 @@ async function solicitarRecuperacaoSenha() {
         const dados = await resposta.json();
         resetBox.hidden = false;
         resetToken.value = dados.token || "";
-        authAjuda.innerHTML = `Codigo de recuperacao: <strong>${dados.token}</strong>. Digite a nova senha abaixo.`;
+        setAuthHelpMessage("Codigo de recuperacao: ", dados.token || "");
         mostrarMensagem("Codigo de recuperacao gerado.");
     } catch (erro) {
         mostrarMensagem(erro.message, "error");
