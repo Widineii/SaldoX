@@ -14,7 +14,6 @@ const authSenha = document.querySelector("#authSenha");
 const nomeLabel = document.querySelector("#nomeLabel");
 const authSubmit = document.querySelector("#authSubmit");
 const alternarAuth = document.querySelector("#alternarAuth");
-const preencherDemo = document.querySelector("#preencherDemo");
 const recuperarSenhaBotao = document.querySelector("#recuperarSenhaBotao");
 const resetBox = document.querySelector("#resetBox");
 const resetToken = document.querySelector("#resetToken");
@@ -244,7 +243,7 @@ async function solicitarRecuperacaoSenha() {
         const dados = await resposta.json();
         resetBox.hidden = false;
         resetToken.value = dados.token || "";
-        authAjuda.innerHTML = `Codigo de demo gerado: <strong>${dados.token}</strong>. Digite a nova senha abaixo.`;
+        authAjuda.innerHTML = `Codigo de recuperacao: <strong>${dados.token}</strong>. Digite a nova senha abaixo.`;
         mostrarMensagem("Codigo de recuperacao gerado.");
     } catch (erro) {
         mostrarMensagem(erro.message, "error");
@@ -285,12 +284,11 @@ function alternarModoAuth() {
     nomeLabel.style.display = authModoRegistro ? "grid" : "none";
     authSubmit.textContent = authModoRegistro ? "Criar conta" : "Entrar";
     alternarAuth.textContent = authModoRegistro ? "Ja tenho conta" : "Criar nova conta";
-    preencherDemo.style.display = authModoRegistro ? "none" : "block";
     recuperarSenhaBotao.style.display = authModoRegistro ? "none" : "block";
     resetBox.hidden = true;
     authAjuda.textContent = authModoRegistro
-        ? "Use um email completo. Envio de codigo real precisa de SMTP configurado."
-        : "Demo: lucas@email.com / 123456";
+        ? "Cadastre seus dados para criar uma nova conta."
+        : "Entre com o email e senha cadastrados.";
     authNome.value = "";
     authEmail.value = "";
     authSenha.value = "";
@@ -991,18 +989,6 @@ authForm.addEventListener("submit", autenticar);
 alternarAuth.addEventListener("click", alternarModoAuth);
 recuperarSenhaBotao?.addEventListener("click", solicitarRecuperacaoSenha);
 confirmarResetSenha?.addEventListener("click", confirmarNovaSenha);
-preencherDemo.addEventListener("click", () => {
-    authModoRegistro = false;
-    nomeLabel.style.display = "none";
-    authSubmit.textContent = "Entrar";
-    alternarAuth.textContent = "Criar nova conta";
-    preencherDemo.style.display = "block";
-    recuperarSenhaBotao.style.display = "block";
-    resetBox.hidden = true;
-    authAjuda.textContent = "Demo preenchida. Clique em Entrar.";
-    authEmail.value = "lucas@email.com";
-    authSenha.value = "123456";
-});
 form.addEventListener("submit", salvar);
 document.querySelector("#cancelar").addEventListener("click", () => {
     limparFormulario();
