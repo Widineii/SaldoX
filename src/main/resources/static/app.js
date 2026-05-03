@@ -886,33 +886,26 @@ function abrirFormularioComTipo(tipoSelecionado) {
     descricao.focus();
 }
 
-function exportarCsv() {
-    const transacoes = transacoesFiltradas();
+async function exportarCsv() {
+    try {
+        const resposta = await apiFetch(`/relatorios/csv?${queryTransacoes()}`);
 
-    if (transacoes.length === 0) {
-        mostrarMensagem("Nenhuma transa&ccedil;&atilde;o para exportar.", "error");
-        return;
+        if (!resposta.ok) {
+            mostrarMensagem("Nao foi possivel exportar o CSV.", "error");
+            return;
+        }
+
+        const blob = await resposta.blob();
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = "saldox-relatorio.csv";
+        link.click();
+        URL.revokeObjectURL(url);
+        mostrarMensagem("CSV exportado pelo backend com sucesso.");
+    } catch (erro) {
+        mostrarMensagem(erro.message || "Nao foi possivel exportar o CSV.", "error");
     }
-
-    const cabecalho = ["Data", "Descricao", "Categoria", "Tipo", "Valor"];
-    const linhas = transacoes.map((transacao) => [
-        transacao.data,
-        transacao.descricao,
-        transacao.categoria,
-        transacao.tipo,
-        transacao.valor
-    ]);
-    const csv = [cabecalho, ...linhas]
-        .map((linha) => linha.map((campo) => `"${String(campo).replaceAll('"', '""')}"`).join(","))
-        .join("\n");
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "saldox-transacoes.csv";
-    link.click();
-    URL.revokeObjectURL(url);
-    mostrarMensagem("CSV exportado com sucesso.");
 }
 
 function exportarJson() {

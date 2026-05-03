@@ -3,11 +3,13 @@ package com.portifolio.fintrack.controller;
 import com.portifolio.fintrack.dto.AuthRequest;
 import com.portifolio.fintrack.dto.AuthResponse;
 import com.portifolio.fintrack.dto.MensagemResponse;
+import com.portifolio.fintrack.dto.PerfilRequest;
 import com.portifolio.fintrack.dto.RecuperacaoSenhaRequest;
 import com.portifolio.fintrack.dto.RedefinirSenhaRequest;
 import com.portifolio.fintrack.dto.RegistroRequest;
 import com.portifolio.fintrack.service.AuthService;
 import org.junit.jupiter.api.Test;
+import org.springframework.web.multipart.MultipartFile;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -55,5 +57,30 @@ class AuthControllerTest {
 
         assertThat(controller.recuperarSenha(recuperacao).token()).isEqualTo("ABC12345");
         assertThat(controller.redefinirSenha(redefinicao).mensagem()).isEqualTo("Senha redefinida com sucesso.");
+    }
+
+    @Test
+    void deveAtualizarPerfil() {
+        PerfilRequest request = new PerfilRequest("Ana Maria", "ana.maria@email.com", null);
+        when(authService.atualizarPerfil(1L, request))
+                .thenReturn(new AuthResponse(1L, "Ana Maria", "ana.maria@email.com", "jwt-token", null));
+
+        AuthResponse response = controller.atualizarPerfil(1L, request);
+
+        assertThat(response.nome()).isEqualTo("Ana Maria");
+        assertThat(response.email()).isEqualTo("ana.maria@email.com");
+        verify(authService).atualizarPerfil(1L, request);
+    }
+
+    @Test
+    void deveSalvarAvatar() {
+        MultipartFile avatar = mock(MultipartFile.class);
+        when(authService.salvarAvatar(1L, avatar))
+                .thenReturn(new AuthResponse(1L, "Ana", "ana@email.com", "jwt-token", "data:image/png;base64,abc"));
+
+        AuthResponse response = controller.salvarAvatar(1L, avatar);
+
+        assertThat(response.avatarUrl()).startsWith("data:image/png");
+        verify(authService).salvarAvatar(1L, avatar);
     }
 }

@@ -45,6 +45,34 @@ class TransacaoControllerTest {
         verify(service).listar(1L, null, null, null);
     }
 
+    @Test
+    void deveBuscarTransacaoPorId() {
+        when(service.buscarPorId(10L, 1L)).thenReturn(response());
+
+        TransacaoResponse encontrada = controller.buscar(10L, 1L);
+
+        assertThat(encontrada.id()).isEqualTo(10L);
+        verify(service).buscarPorId(10L, 1L);
+    }
+
+    @Test
+    void deveAtualizarTransacao() {
+        TransacaoRequest request = request();
+        when(service.atualizar(10L, request)).thenReturn(response());
+
+        TransacaoResponse atualizada = controller.atualizar(10L, request);
+
+        assertThat(atualizada.descricao()).isEqualTo("Salario");
+        verify(service).atualizar(10L, request);
+    }
+
+    @Test
+    void deveDeletarTransacao() {
+        controller.deletar(10L, 1L);
+
+        verify(service).deletar(10L, 1L);
+    }
+
     private TransacaoRequest request() {
         return new TransacaoRequest(
                 "Salario",

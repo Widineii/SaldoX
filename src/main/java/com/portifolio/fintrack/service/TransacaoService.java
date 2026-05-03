@@ -16,6 +16,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class TransacaoService {
@@ -77,6 +78,20 @@ public class TransacaoService {
         BigDecimal saldo = receitas.subtract(despesas);
 
         return new ResumoFinanceiro(receitas, despesas, saldo, transacoes.size());
+    }
+
+    public String exportarCsv(Long usuarioId, String busca, TipoTransacao tipo, String mes) {
+        List<TransacaoResponse> transacoes = listar(usuarioId, busca, tipo, mes);
+        String cabecalho = "Data,Descricao,Categoria,Tipo,Status,Vencimento,Parcela,Valor";
+        String linhas = transacoes.stream()
+                .map(this::linhaCsv)
+                .collect(Collectors.joining("\n"));
+
+        if (linhas.isBlank()) {
+            return cabecalho + "\n";
+        }
+
+        return cabecalho + "\n" + linhas + "\n";
     }
 
     private void preencherTransacao(Transacao transacao, TransacaoRequest request, Usuario usuario) {
@@ -161,6 +176,36 @@ public class TransacaoService {
         }
 
         return busca.trim();
+    }
+
+    private String linhaCsv(TransacaoResponse transacao) {
+        String parcela = transacao.totalParcelas() == null
+                ? ""
+                : transacao.parcelaAtual() + "/" + transacao.totalParcelas();
+
+        return String.join(",",
+                csv(transacao.data()),
+                csv(transacao.descricao()),
+                csv(transacao.categoria()),
+                csv(transacao.tipo()),
+                csv(transacao.status()),
+                csv(transacao.vencimento()),
+                csv(parcela),
+                csv(transacao.valor())
+        );
+    }
+
+    private String csv(Object valor) {
+        if (valor == null) {
+            return "\"\"";
+        }
+
+        String texto = String.valueOf(valor).replace("\"", "\"\"");
+        if (texto.startsWith("=") || texto.startsWith("+") || texto.startsWith("-") || texto.startsWith("@")) {
+            texto = "'" + texto;
+        }
+
+        return "\"" + texto + "\"";
     }
 
     private Periodo montarPeriodo(String mes) {

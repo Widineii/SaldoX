@@ -18,11 +18,13 @@ O projeto simula uma aplicacao real para controle de receitas e despesas, com au
 - Autenticacao com **JWT** e senhas criptografadas com **BCrypt**
 - Cadastro, edicao, exclusao e filtros de transacoes
 - Dashboard com saldo, receitas, despesas, total de transacoes e graficos
+- Documentacao da API com **OpenAPI/Swagger**
+- Exportacao de relatorios em **CSV**
 - DTOs para entrada e saida de dados
 - Tratamento centralizado de erros
 - Ambiente local com **H2** e profile para **PostgreSQL**
 - Estrutura com **Docker** e `render.yaml` para publicacao
-- Testes de services e controllers
+- Testes de services, controllers e integracao com H2
 
 ## Funcionalidades
 
@@ -35,6 +37,7 @@ O projeto simula uma aplicacao real para controle de receitas e despesas, com au
 - Cards de resumo financeiro
 - Grafico de categorias por despesa
 - Grafico de resumo mensal com Chart.js
+- Exportacao CSV das transacoes filtradas
 - Mensagens de sucesso e erro na tela
 
 ## Usuario demo
@@ -109,6 +112,23 @@ PUT    /transacoes/{id}
 DELETE /transacoes/{id}?usuarioId=1
 
 GET    /dashboard/resumo?usuarioId=1
+
+GET    /relatorios/csv?usuarioId=1
+GET    /relatorios/csv?usuarioId=1&tipo=DESPESA&mes=2026-05
+```
+
+## Documentacao da API
+
+Com o projeto rodando, acesse:
+
+```text
+http://localhost:8080/swagger.html
+```
+
+O arquivo OpenAPI tambem fica disponivel em:
+
+```text
+http://localhost:8080/openapi.yaml
 ```
 
 ## Exemplo de transacao
@@ -181,13 +201,20 @@ Este projeto mostra capacidade de construir uma aplicacao web completa, passando
 - consumo dos dados em uma interface web
 - preparacao para deploy
 
+## Melhorias implementadas nesta fase
+
+- Projeto preparado para publicacao online com Docker e Render Blueprint
+- Documentacao Swagger/OpenAPI disponivel em `/swagger.html`
+- Teste de integracao com banco H2 em memoria
+- Mais cobertura nos controllers de auth, transacoes, dashboard e relatorios
+- Exportacao de relatorios em CSV pelo backend
+
 ## Proximas melhorias
 
-- Publicar uma versao online para demonstracao
-- Adicionar documentacao Swagger/OpenAPI
-- Criar mais testes de integracao
-- Melhorar cobertura de testes dos controllers
-- Adicionar exportacao de relatorios em CSV ou PDF
+- Publicar a URL final em uma conta Render/Railway
+- Adicionar envio real de email para recuperacao de senha
+- Adicionar exportacao em PDF
+- Criar pipeline de CI no GitHub Actions
 
 ## Autor
 

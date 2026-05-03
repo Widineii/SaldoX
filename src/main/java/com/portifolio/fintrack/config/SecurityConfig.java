@@ -28,7 +28,7 @@ public class SecurityConfig {
                 .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/index.html", "/styles.css", "/app.js", "/banco-h2.html", "/banco-h2.js").permitAll()
+                        .requestMatchers("/", "/index.html", "/styles.css", "/app.js", "/banco-h2.html", "/banco-h2.js", "/swagger.html", "/openapi.yaml").permitAll()
                         .requestMatchers("/h2-console/**", "/banco-h2/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/registrar", "/auth/login", "/auth/recuperar-senha", "/auth/redefinir-senha").permitAll()
                         .anyRequest().authenticated()

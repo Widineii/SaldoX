@@ -1,0 +1,414 @@
+openapi: 3.0.3
+info:
+  title: SaldoX API
+  version: 1.0.0
+  description: API REST para controle financeiro pessoal com JWT, transacoes, dashboard e relatorios.
+servers:
+  - url: http://localhost:8080
+    description: Ambiente local
+security:
+  - bearerAuth: []
+tags:
+  - name: Auth
+  - name: Transacoes
+  - name: Dashboard
+  - name: Relatorios
+paths:
+  /auth/registrar:
+    post:
+      tags: [Auth]
+      summary: Cadastra um usuario
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegistroRequest'
+      responses:
+        '200':
+          description: Usuario cadastrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Autentica um usuario
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthRequest'
+      responses:
+        '200':
+          description: Login realizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+  /auth/recuperar-senha:
+    post:
+      tags: [Auth]
+      summary: Gera codigo de recuperacao de senha
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecuperacaoSenhaRequest'
+      responses:
+        '200':
+          description: Codigo gerado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MensagemResponse'
+  /auth/redefinir-senha:
+    post:
+      tags: [Auth]
+      summary: Redefine senha usando codigo
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RedefinirSenhaRequest'
+      responses:
+        '200':
+          description: Senha redefinida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MensagemResponse'
+  /auth/perfil/{usuarioId}:
+    put:
+      tags: [Auth]
+      summary: Atualiza dados do perfil
+      parameters:
+        - $ref: '#/components/parameters/UsuarioIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PerfilRequest'
+      responses:
+        '200':
+          description: Perfil atualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+  /auth/avatar/{usuarioId}:
+    post:
+      tags: [Auth]
+      summary: Envia avatar do usuario
+      parameters:
+        - $ref: '#/components/parameters/UsuarioIdPath'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                avatar:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Avatar salvo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+  /transacoes:
+    get:
+      tags: [Transacoes]
+      summary: Lista transacoes com filtros
+      parameters:
+        - $ref: '#/components/parameters/UsuarioIdQuery'
+        - name: busca
+          in: query
+          schema:
+            type: string
+        - name: tipo
+          in: query
+          schema:
+            $ref: '#/components/schemas/TipoTransacao'
+        - name: mes
+          in: query
+          schema:
+            type: string
+            example: '2026-05'
+      responses:
+        '200':
+          description: Lista de transacoes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TransacaoResponse'
+    post:
+      tags: [Transacoes]
+      summary: Cria uma transacao
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransacaoRequest'
+      responses:
+        '200':
+          description: Transacao criada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransacaoResponse'
+  /transacoes/{id}:
+    get:
+      tags: [Transacoes]
+      summary: Busca uma transacao por id
+      parameters:
+        - $ref: '#/components/parameters/TransacaoIdPath'
+        - $ref: '#/components/parameters/UsuarioIdQuery'
+      responses:
+        '200':
+          description: Transacao encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransacaoResponse'
+    put:
+      tags: [Transacoes]
+      summary: Atualiza uma transacao
+      parameters:
+        - $ref: '#/components/parameters/TransacaoIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransacaoRequest'
+      responses:
+        '200':
+          description: Transacao atualizada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransacaoResponse'
+    delete:
+      tags: [Transacoes]
+      summary: Remove uma transacao
+      parameters:
+        - $ref: '#/components/parameters/TransacaoIdPath'
+        - $ref: '#/components/parameters/UsuarioIdQuery'
+      responses:
+        '200':
+          description: Transacao removida
+  /dashboard/resumo:
+    get:
+      tags: [Dashboard]
+      summary: Retorna resumo financeiro do usuario
+      parameters:
+        - $ref: '#/components/parameters/UsuarioIdQuery'
+      responses:
+        '200':
+          description: Resumo financeiro
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResumoFinanceiro'
+  /relatorios/csv:
+    get:
+      tags: [Relatorios]
+      summary: Exporta transacoes em CSV
+      parameters:
+        - $ref: '#/components/parameters/UsuarioIdQuery'
+        - name: busca
+          in: query
+          schema:
+            type: string
+        - name: tipo
+          in: query
+          schema:
+            $ref: '#/components/schemas/TipoTransacao'
+        - name: mes
+          in: query
+          schema:
+            type: string
+            example: '2026-05'
+      responses:
+        '200':
+          description: Arquivo CSV
+          content:
+            text/csv:
+              schema:
+                type: string
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    UsuarioIdPath:
+      name: usuarioId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+    UsuarioIdQuery:
+      name: usuarioId
+      in: query
+      required: true
+      schema:
+        type: integer
+        format: int64
+    TransacaoIdPath:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+  schemas:
+    AuthRequest:
+      type: object
+      required: [email, senha]
+      properties:
+        email:
+          type: string
+          example: lucas@email.com
+        senha:
+          type: string
+          example: '123456'
+    RegistroRequest:
+      type: object
+      required: [nome, email, senha]
+      properties:
+        nome:
+          type: string
+          example: Lucas
+        email:
+          type: string
+          example: lucas@email.com
+        senha:
+          type: string
+          example: '123456'
+    PerfilRequest:
+      type: object
+      required: [nome, email]
+      properties:
+        nome:
+          type: string
+        email:
+          type: string
+        senha:
+          type: string
+    RecuperacaoSenhaRequest:
+      type: object
+      required: [email]
+      properties:
+        email:
+          type: string
+    RedefinirSenhaRequest:
+      type: object
+      required: [token, novaSenha]
+      properties:
+        token:
+          type: string
+        novaSenha:
+          type: string
+    MensagemResponse:
+      type: object
+      properties:
+        mensagem:
+          type: string
+        token:
+          type: string
+          nullable: true
+    AuthResponse:
+      type: object
+      properties:
+        usuarioId:
+          type: integer
+          format: int64
+        nome:
+          type: string
+        email:
+          type: string
+        token:
+          type: string
+        avatarUrl:
+          type: string
+          nullable: true
+    TransacaoRequest:
+      type: object
+      required: [descricao, valor, data, categoria, tipo, usuarioId]
+      properties:
+        descricao:
+          type: string
+          example: Mercado
+        valor:
+          type: number
+          example: 320.45
+        data:
+          type: string
+          format: date
+          example: '2026-05-03'
+        categoria:
+          type: string
+          example: Alimentacao
+        tipo:
+          $ref: '#/components/schemas/TipoTransacao'
+        vencimento:
+          type: string
+          format: date
+          nullable: true
+        status:
+          $ref: '#/components/schemas/StatusTransacao'
+        parcelaAtual:
+          type: integer
+          nullable: true
+        totalParcelas:
+          type: integer
+          nullable: true
+        cartaoCredito:
+          type: boolean
+        usuarioId:
+          type: integer
+          format: int64
+    TransacaoResponse:
+      allOf:
+        - $ref: '#/components/schemas/TransacaoRequest'
+        - type: object
+          properties:
+            id:
+              type: integer
+              format: int64
+    ResumoFinanceiro:
+      type: object
+      properties:
+        totalReceitas:
+          type: number
+        totalDespesas:
+          type: number
+        saldo:
+          type: number
+        quantidadeTransacoes:
+          type: integer
+    TipoTransacao:
+      type: string
+      enum: [RECEITA, DESPESA]
+    StatusTransacao:
+      type: string
+      enum: [PAGA, PENDENTE, ATRASADA]
