@@ -73,12 +73,14 @@ const avatarInput = document.querySelector("#avatarInput");
 const emptyState = document.querySelector("#emptyState");
 const metaMensal = document.querySelector("#metaMensal");
 const importarJsonInput = document.querySelector("#importarJsonInput");
+const loadingOverlay = document.querySelector("#loadingOverlay");
 
 let transacoesAtuais = [];
 let authModoRegistro = false;
 let usuario = JSON.parse(localStorage.getItem("fintrackUsuario") || "null");
 let idPendenteExclusao = null;
 let graficoMensalChart = null;
+let carregando = 0;
 
 const formatoMoeda = new Intl.NumberFormat("pt-BR", {
     style: "currency",
@@ -110,6 +112,26 @@ function mostrarMensagem(texto, tipo = "success") {
     mostrarMensagem.timer = window.setTimeout(() => {
         toast.className = "toast";
     }, 3000);
+}
+
+function escapeHtml(valor) {
+    return String(valor ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+}
+
+function transacaoPorId(id) {
+    return transacoesAtuais.find((transacao) => String(transacao.id) === String(id));
+}
+
+function setLoading(ativo) {
+    carregando += ativo ? 1 : -1;
+    carregando = Math.max(carregando, 0);
+    document.body.classList.toggle("is-loading", carregando > 0);
+    loadingOverlay?.setAttribute("aria-hidden", carregando > 0 ? "false" : "true");
 }
 
 function authHeader() {
@@ -172,10 +194,14 @@ function atualizarPerfil() {
     }
 
     authScreen.classList.remove("open");
-    perfilNome.innerHTML = `Ol&aacute;, ${usuario.nome}!`;
+    perfilNome.textContent = `Ola, ${usuario.nome}!`;
     perfilEmail.textContent = usuario.email;
     if (usuario.avatarUrl) {
-        perfilAvatar.innerHTML = `<img src="${usuario.avatarUrl}" alt="Avatar de ${usuario.nome}">`;
+        perfilAvatar.textContent = "";
+        const avatar = document.createElement("img");
+        avatar.src = usuario.avatarUrl;
+        avatar.alt = `Avatar de ${usuario.nome}`;
+        perfilAvatar.appendChild(avatar);
     } else {
         perfilAvatar.textContent = usuario.nome.charAt(0).toUpperCase();
     }
@@ -388,6 +414,7 @@ async function carregarTransacoes() {
         return;
     }
 
+    setLoading(true);
     try {
         const resposta = await apiFetch(`${api.transacoes}?${queryTransacoes()}`);
 
@@ -399,6 +426,8 @@ async function carregarTransacoes() {
         renderizarTudo();
     } catch (erro) {
         mostrarMensagem("N&atilde;o foi poss&iacute;vel carregar as transa&ccedil;&otilde;es.", "error");
+    } finally {
+        setLoading(false);
     }
 }
 
@@ -428,10 +457,11 @@ function renderizarTabela(transacoes) {
         const statusAtual = statusCalculado(transacao);
         const parcela = transacao.totalParcelas ? `${transacao.parcelaAtual}/${transacao.totalParcelas}` : "-";
         const linha = document.createElement("tr");
+        linha.dataset.id = transacao.id;
         linha.innerHTML = `
             <td>${formatarData(transacao.data)}</td>
-            <td>${transacao.descricao}</td>
-            <td><span class="category-chip">${abreviar(transacao.categoria)}</span>${transacao.categoria}</td>
+            <td>${escapeHtml(transacao.descricao)}</td>
+            <td><span class="category-chip">${escapeHtml(abreviar(transacao.categoria))}</span>${escapeHtml(transacao.categoria)}</td>
             <td><span class="tag ${transacao.tipo}">${receita ? "Receita" : "Despesa"}</span></td>
             <td><span class="tag status-${statusAtual}">${textoStatus(statusAtual)}</span></td>
             <td>${transacao.vencimento ? formatarData(transacao.vencimento) : "-"}</td>
@@ -439,9 +469,9 @@ function renderizarTabela(transacoes) {
             <td class="${receita ? "money-income" : "money-expense"}">${receita ? "" : "- "}${formatoMoeda.format(transacao.valor)}</td>
             <td>
                 <div class="row-actions">
-                    ${statusAtual !== "PAGA" ? `<button type="button" class="success" onclick='marcarComoPago(${JSON.stringify(transacao)})'>Pagar</button>` : ""}
-                    <button type="button" class="secondary" onclick='editar(${JSON.stringify(transacao)})'>Editar</button>
-                    <button type="button" class="danger" onclick="excluir(${transacao.id})">Excluir</button>
+                    ${statusAtual !== "PAGA" ? '<button type="button" class="success" data-action="pagar">Pagar</button>' : ""}
+                    <button type="button" class="secondary" data-action="editar">Editar</button>
+                    <button type="button" class="danger" data-action="excluir">Excluir</button>
                 </div>
             </td>
         `;
@@ -497,7 +527,7 @@ function renderizarCategorias(transacoes) {
         const item = document.createElement("div");
         item.className = "category-item";
         item.innerHTML = `
-            <span><i class="dot" style="background:${cores[index % cores.length]}"></i>${nome}</span>
+            <span><i class="dot" style="background:${cores[index % cores.length]}"></i>${escapeHtml(nome)}</span>
             <strong>${formatoMoeda.format(itemValor)}</strong>
             <small>${percentual.toFixed(1)}%</small>
         `;
@@ -638,7 +668,7 @@ function renderizarRelatorios(transacoes) {
     document.querySelector("#relatorioCategorias").innerHTML = lista.length
         ? lista.map(([nome, total]) => `
             <div>
-                <span>${nome}</span>
+                <span>${escapeHtml(nome)}</span>
                 <strong>${formatoMoeda.format(total)}</strong>
             </div>
         `).join("")
@@ -680,7 +710,7 @@ function renderizarAlertas(transacoes) {
     }
 
     if (maiorDespesaItem && Number(maiorDespesaItem.valor) >= 500) {
-        alertas.push(["Despesa alta", `${maiorDespesaItem.descricao} ficou em ${formatoMoeda.format(maiorDespesaItem.valor)}.`]);
+        alertas.push(["Despesa alta", `${escapeHtml(maiorDespesaItem.descricao)} ficou em ${formatoMoeda.format(maiorDespesaItem.valor)}.`]);
     }
 
     if (contasPendentes.some((transacao) => statusCalculado(transacao) === "ATRASADA")) {
@@ -688,7 +718,7 @@ function renderizarAlertas(transacoes) {
     }
 
     if (vencendo) {
-        alertas.push(["Vencimento proximo", `${vencendo.descricao} vence em ${formatarData(vencendo.vencimento)}.`]);
+        alertas.push(["Vencimento proximo", `${escapeHtml(vencendo.descricao)} vence em ${formatarData(vencendo.vencimento)}.`]);
     }
 
     if (alertas.length === 0) {
@@ -697,7 +727,7 @@ function renderizarAlertas(transacoes) {
 
     document.querySelector("#alertasLista").innerHTML = alertas.map(([titulo, texto]) => `
         <div>
-            <strong>${titulo}</strong>
+            <strong>${escapeHtml(titulo)}</strong>
             <p>${texto}</p>
         </div>
     `).join("");
@@ -754,6 +784,7 @@ async function salvar(event) {
     const url = id ? `${api.transacoes}/${id}` : api.transacoes;
     const metodo = id ? "PUT" : "POST";
 
+    setLoading(true);
     try {
         if (deveParcelar) {
             const respostas = await Promise.all(Array.from({ length: totalParcelas }, (_, index) => apiFetch(api.transacoes, {
@@ -785,6 +816,8 @@ async function salvar(event) {
         await carregarTransacoes();
     } catch (erro) {
         mostrarMensagem("N&atilde;o foi poss&iacute;vel salvar a transa&ccedil;&atilde;o.", "error");
+    } finally {
+        setLoading(false);
     }
 }
 
@@ -797,6 +830,7 @@ async function carregarDadosExemplo() {
         { descricao: "Internet", valor: 119.90, data: hoje(), categoria: "Moradia", tipo: "DESPESA" }
     ];
 
+    setLoading(true);
     try {
         await Promise.all(exemplos.map((transacao) => apiFetch(api.transacoes, {
             method: "POST",
@@ -807,6 +841,8 @@ async function carregarDadosExemplo() {
         await carregarTransacoes();
     } catch (erro) {
         mostrarMensagem("Nao foi possivel carregar os exemplos.", "error");
+    } finally {
+        setLoading(false);
     }
 }
 
@@ -827,19 +863,24 @@ function editar(transacao) {
 }
 
 async function marcarComoPago(transacao) {
-    const resposta = await apiFetch(`${api.transacoes}/${transacao.id}`, {
-        method: "PUT",
-        headers: jsonHeaders(),
-        body: JSON.stringify({ ...transacao, status: "PAGA", usuarioId: usuario.usuarioId })
-    });
+    setLoading(true);
+    try {
+        const resposta = await apiFetch(`${api.transacoes}/${transacao.id}`, {
+            method: "PUT",
+            headers: jsonHeaders(),
+            body: JSON.stringify({ ...transacao, status: "PAGA", usuarioId: usuario.usuarioId })
+        });
 
-    if (!resposta.ok) {
-        mostrarMensagem("Nao foi possivel marcar como pago.", "error");
-        return;
+        if (!resposta.ok) {
+            mostrarMensagem("Nao foi possivel marcar como pago.", "error");
+            return;
+        }
+
+        mostrarMensagem("Conta marcada como paga.");
+        await carregarTransacoes();
+    } finally {
+        setLoading(false);
     }
-
-    mostrarMensagem("Conta marcada como paga.");
-    await carregarTransacoes();
 }
 
 function excluir(id) {
@@ -887,6 +928,7 @@ function abrirFormularioComTipo(tipoSelecionado) {
 }
 
 async function exportarCsv() {
+    setLoading(true);
     try {
         const resposta = await apiFetch(`/relatorios/csv?${queryTransacoes()}`);
 
@@ -905,6 +947,8 @@ async function exportarCsv() {
         mostrarMensagem("CSV exportado pelo backend com sucesso.");
     } catch (erro) {
         mostrarMensagem(erro.message || "Nao foi possivel exportar o CSV.", "error");
+    } finally {
+        setLoading(false);
     }
 }
 
@@ -929,6 +973,7 @@ async function importarBackup(arquivo) {
         return;
     }
 
+    setLoading(true);
     try {
         const conteudo = JSON.parse(await arquivo.text());
         const transacoes = Array.isArray(conteudo) ? conteudo : conteudo.transacoes || [];
@@ -962,6 +1007,7 @@ async function importarBackup(arquivo) {
         mostrarMensagem("Arquivo de backup invalido.", "error");
     } finally {
         importarJsonInput.value = "";
+        setLoading(false);
     }
 }
 
@@ -983,6 +1029,32 @@ alternarAuth.addEventListener("click", alternarModoAuth);
 recuperarSenhaBotao?.addEventListener("click", solicitarRecuperacaoSenha);
 confirmarResetSenha?.addEventListener("click", confirmarNovaSenha);
 form.addEventListener("submit", salvar);
+listaTransacoes?.addEventListener("click", (event) => {
+    const botao = event.target.closest("button[data-action]");
+    const linha = botao?.closest("tr[data-id]");
+
+    if (!botao || !linha) {
+        return;
+    }
+
+    const transacao = transacaoPorId(linha.dataset.id);
+    if (!transacao) {
+        mostrarMensagem("Transacao nao encontrada na lista atual.", "error");
+        return;
+    }
+
+    if (botao.dataset.action === "pagar") {
+        marcarComoPago(transacao);
+    }
+
+    if (botao.dataset.action === "editar") {
+        editar(transacao);
+    }
+
+    if (botao.dataset.action === "excluir") {
+        excluir(transacao.id);
+    }
+});
 document.querySelector("#cancelar").addEventListener("click", () => {
     limparFormulario();
     form.classList.remove("open");

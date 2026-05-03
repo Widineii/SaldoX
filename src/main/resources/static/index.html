@@ -3,7 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SaldoX</title>
+    <meta name="description" content="SaldoX e um dashboard financeiro em Java Spring Boot para controlar receitas, despesas, parcelas, metas, alertas e relatorios.">
+    <meta name="theme-color" content="#071329">
+    <meta property="og:title" content="SaldoX - Dashboard financeiro">
+    <meta property="og:description" content="Sistema financeiro responsivo com JWT, H2, relatorios e dashboard moderno.">
+    <meta property="og:type" content="website">
+    <title>SaldoX | Dashboard financeiro</title>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%2300897b'/%3E%3Ctext x='32' y='42' text-anchor='middle' font-family='Arial,sans-serif' font-size='34' font-weight='900' fill='white'%3ES%3C/text%3E%3C/svg%3E">
     <link rel="stylesheet" href="styles.css">
 </head>
@@ -46,7 +52,7 @@
         <nav class="menu">
             <a class="active" href="#" data-title="Resumo"><span>$</span>Resumo</a>
             <a href="#transacoes" data-title="Transa&ccedil;&otilde;es"><span>&uarr;</span>Transa&ccedil;&otilde;es</a>
-            <a href="#categorias" data-title="Categoraia"><span>&amp;</span>Categoraia</a>
+            <a href="#categorias" data-title="Categorias"><span>&amp;</span>Categorias</a>
             <a href="#planejamento" data-title="Or&ccedil;amentos"><span>&Theta;</span>Or&ccedil;amentos</a>
             <a href="#planejamento" data-title="Metas"><span>&#10003;</span>Metas</a>
             <a href="#relatorios" data-title="Relat&oacute;rios"><span>&#9632;</span>Relat&oacute;rios</a>
@@ -74,8 +80,8 @@
             <div class="top-actions">
                 <button id="filtrarMesAtual" class="date-btn" type="button">Filtrar m&ecirc;s atual</button>
                 <button id="alternarTema" class="icon-btn" type="button" aria-label="Alternar tema">T</button>
-                <button id="atualizar" class="icon-btn" type="button">A</button>
-                <button id="sair" class="close-btn" type="button">x</button>
+                <button id="atualizar" class="icon-btn" type="button" aria-label="Atualizar dados">A</button>
+                <button id="sair" class="close-btn" type="button" aria-label="Sair da conta">x</button>
             </div>
         </header>
 
@@ -132,7 +138,7 @@
                         <strong id="saldo">R$ 0,00</strong>
                     </div>
                 </div>
-                <p class="trend up">+ 12,5% <span>em rela&ccedil;&atilde;o a Abr/2025</span></p>
+                <p class="trend up">Atual <span>conforme filtros aplicados</span></p>
                 <div class="sparkline teal"></div>
             </article>
 
@@ -144,7 +150,7 @@
                         <strong id="receitas">R$ 0,00</strong>
                     </div>
                 </div>
-                <p class="trend up">+ 8,3% <span>em rela&ccedil;&atilde;o a Abr/2025</span></p>
+                <p class="trend up">Entradas <span>somadas no per&iacute;odo</span></p>
                 <div class="sparkline green"></div>
             </article>
 
@@ -156,7 +162,7 @@
                         <strong id="despesas">R$ 0,00</strong>
                     </div>
                 </div>
-                <p class="trend down">- 5,7% <span>em rela&ccedil;&atilde;o a Abr/2025</span></p>
+                <p class="trend down">Sa&iacute;das <span>somadas no per&iacute;odo</span></p>
                 <div class="sparkline orange"></div>
             </article>
 
@@ -168,7 +174,7 @@
                         <strong id="quantidade">0</strong>
                     </div>
                 </div>
-                <p class="trend up">+ 14,8% <span>em rela&ccedil;&atilde;o a Abr/2025</span></p>
+                <p class="trend up">Registros <span>ativos no filtro</span></p>
                 <div class="sparkline blue"></div>
             </article>
         </section>
@@ -463,6 +469,10 @@
     </main>
 
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <div id="loadingOverlay" class="loading-overlay" aria-hidden="true">
+        <span></span>
+        <strong>Sincronizando dados...</strong>
+    </div>
 
     <section id="modalConfirmacao" class="modal-overlay" aria-hidden="true">
         <div class="modal-card">
