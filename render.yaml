@@ -1,24 +1,26 @@
 services:
   - type: web
-    name: fintrack
-    env: docker
+    name: saldox
+    runtime: docker
     plan: free
     envVars:
       - key: SPRING_PROFILES_ACTIVE
         value: postgres
+      - key: JWT_SECRET
+        generateValue: true
       - key: DATABASE_URL
         fromDatabase:
-          name: fintrack-db
+          name: saldox-db
           property: connectionString
       - key: DATABASE_USERNAME
         fromDatabase:
-          name: fintrack-db
+          name: saldox-db
           property: user
       - key: DATABASE_PASSWORD
         fromDatabase:
-          name: fintrack-db
+          name: saldox-db
           property: password
 
 databases:
-  - name: fintrack-db
+  - name: saldox-db
     plan: free

@@ -154,6 +154,10 @@ O projeto inclui:
 - `render.yaml`
 - profile `postgres`
 
+Guia completo:
+
+- [Deploy no Render](DEPLOY_RENDER.md)
+
 Para publicar, conecte o repositorio no Render/Railway e configure as variaveis:
 
 ```text
