@@ -4,13 +4,22 @@
 ![Java](https://img.shields.io/badge/Java-17+-f97316)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.0.6-22c55e)
 ![Database](https://img.shields.io/badge/database-H2%20%7C%20PostgreSQL-2563eb)
-![Deploy](https://img.shields.io/badge/deploy-Docker%20%7C%20Render-9333ea)
+![Deploy](https://img.shields.io/badge/deploy-Docker%20%7C%20Railway-9333ea)
+![CI/CD](https://img.shields.io/github/actions/workflow/status/Widineii/SaldoX/ci.yml?branch=main&label=CI%2FCD)
 
 Dashboard financeiro pessoal desenvolvido com **Java, Spring Boot e interface web responsiva**.
 
 O projeto simula uma aplicacao real para controle de receitas e despesas, com autenticacao, cadastro de transacoes, filtros, graficos, resumo financeiro e estrutura preparada para deploy.
 
 ![Preview do dashboard SaldoX](docs/images/saldox-preview.png)
+
+## 🎬 Demo ao Vivo
+
+[![Deploy](https://img.shields.io/badge/Acessar%20Demo-Railway-0B47D9)](https://saldox.up.railway.app/)
+
+**Credenciais demo:**
+- Email: `lucas@email.com`
+- Senha: `123456`
 
 ## Destaques do projeto
 
@@ -19,11 +28,12 @@ O projeto simula uma aplicacao real para controle de receitas e despesas, com au
 - Cadastro, edicao, exclusao e filtros de transacoes
 - Dashboard com saldo, receitas, despesas, total de transacoes e graficos
 - Documentacao da API com **OpenAPI/Swagger**
-- Exportacao de relatorios em **CSV**
+- Exportacao de relatorios em **CSV** e **PDF**
 - DTOs para entrada e saida de dados
 - Tratamento centralizado de erros
 - Ambiente local com **H2** e profile para **PostgreSQL**
 - Estrutura com **Docker** e `render.yaml` para publicacao
+- Pipeline **CI/CD** com GitHub Actions
 - Testes de services, controllers e integracao com H2
 
 ## Funcionalidades
@@ -38,6 +48,7 @@ O projeto simula uma aplicacao real para controle de receitas e despesas, com au
 - Grafico de categorias por despesa
 - Grafico de resumo mensal com Chart.js
 - Exportacao CSV das transacoes filtradas
+- Exportacao PDF de relatorios
 - Mensagens de sucesso e erro na tela
 
 ## Usuario demo
@@ -57,10 +68,12 @@ Senha: 123456
 - Bean Validation
 - H2 Database
 - PostgreSQL
+- iText (PDF Export)
 - Maven
 - HTML, CSS e JavaScript
 - Chart.js
 - Docker
+- GitHub Actions
 
 ## Como rodar localmente
 
@@ -103,18 +116,21 @@ DATABASE_PASSWORD=postgres
 ```text
 POST   /auth/registrar
 POST   /auth/login
+POST   /auth/recuperar-senha
+POST   /auth/redefinir-senha
 
-GET    /transacoes?usuarioId=1
-GET    /transacoes?usuarioId=1&busca=mercado&tipo=DESPESA&mes=2026-04
+GET    /transacoes
+GET    /transacoes?busca=mercado&tipo=DESPESA&mes=2026-04
 POST   /transacoes
-GET    /transacoes/{id}?usuarioId=1
+GET    /transacoes/{id}
 PUT    /transacoes/{id}
-DELETE /transacoes/{id}?usuarioId=1
+DELETE /transacoes/{id}
 
-GET    /dashboard/resumo?usuarioId=1
+GET    /dashboard/resumo
 
-GET    /relatorios/csv?usuarioId=1
-GET    /relatorios/csv?usuarioId=1&tipo=DESPESA&mes=2026-05
+GET    /relatorios/csv
+GET    /relatorios/csv?tipo=DESPESA&mes=2026-05
+GET    /relatorios/pdf
 ```
 
 ## Documentacao da API
@@ -139,8 +155,7 @@ http://localhost:8080/openapi.yaml
   "valor": 320.45,
   "data": "2026-04-28",
   "categoria": "Alimentacao",
-  "tipo": "DESPESA",
-  "usuarioId": 1
+  "tipo": "DESPESA"
 }
 ```
 
@@ -174,6 +189,7 @@ O projeto inclui:
 - `render.yaml`
 - `netlify.toml`
 - profile `postgres`
+- `.github/workflows/ci.yml` (CI/CD)
 
 Guia completo:
 
@@ -181,11 +197,11 @@ Guia completo:
 
 Tambem ha uma vitrine estatica para publicar no Netlify usando a pasta `site/`.
 
-Para publicar, conecte o repositorio no Render/Railway e configure as variaveis:
+Para publicar, conecte o repositorio no Railway e configure as variaveis:
 
 ```text
 SPRING_PROFILES_ACTIVE=postgres
-DATABASE_URL=jdbc:postgresql://host:5432/fintrack
+DATABASE_URL=postgresql://user:password@host:5432/fintrack
 DATABASE_USERNAME=usuario
 DATABASE_PASSWORD=senha
 ```
@@ -199,22 +215,26 @@ Este projeto mostra capacidade de construir uma aplicacao web completa, passando
 - autenticacao e seguranca
 - persistencia com banco de dados
 - consumo dos dados em uma interface web
-- preparacao para deploy
+- preparacao para deploy com CI/CD
 
 ## Melhorias implementadas nesta fase
 
-- Projeto preparado para publicacao online com Docker e Render Blueprint
-- Documentacao Swagger/OpenAPI disponivel em `/swagger.html`
-- Teste de integracao com banco H2 em memoria
-- Mais cobertura nos controllers de auth, transacoes, dashboard e relatorios
-- Exportacao de relatorios em CSV pelo backend
+- ✅ Corrigido login do usuário demo com senha em BCrypt
+- ✅ Implementada recuperação de senha com código de redefinição
+- ✅ Adicionada segurança: usuário extraído do contexto JWT
+- ✅ Configurado PostgreSQL para produção em Railway
+- ✅ Pipeline CI/CD com GitHub Actions
+- ✅ Suporte a exportação de PDF com iText
+- ✅ Documentação e README atualizados
+- ✅ Usuário demo funcionando corretamente
 
 ## Proximas melhorias
 
-- Publicar a URL final em uma conta Render/Railway
-- Adicionar envio real de email para recuperacao de senha
-- Adicionar exportacao em PDF
-- Criar pipeline de CI no GitHub Actions
+- Implementar exportação em PDF no endpoint `/relatorios/pdf`
+- Remover `usuarioId` de todos os parâmetros de query
+- Testes E2E com Selenium
+- Adicionar paginação nos endpoints de listagem
+- Implementar cache com Redis
 
 ## Autor
 
