@@ -10,26 +10,50 @@ import com.portifolio.fintrack.dto.RegistroRequest;
 import com.portifolio.fintrack.exception.RegraNegocioException;
 import com.portifolio.fintrack.model.Usuario;
 import com.portifolio.fintrack.repository.UsuarioRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.mail.MailException;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Base64;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
 public class AuthService {
 
+    private static final Logger log = LoggerFactory.getLogger(AuthService.class);
+
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final JavaMailSender mailSender;
+    private final String mailFrom;
+    private final boolean exibirCodigoQuandoSemSmtp;
 
-    public AuthService(UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder, JwtService jwtService) {
+    public AuthService(
+            UsuarioRepository usuarioRepository,
+            PasswordEncoder passwordEncoder,
+            JwtService jwtService,
+            @Autowired(required = false) JavaMailSender mailSender,
+            @Value("${app.mail.from:}") String mailFrom,
+            @Value("${app.recuperacao.exibir-codigo-quando-sem-smtp:true}") boolean exibirCodigoQuandoSemSmtp
+    ) {
         this.usuarioRepository = usuarioRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
+        this.mailSender = mailSender;
+        this.mailFrom = mailFrom;
+        this.exibirCodigoQuandoSemSmtp = exibirCodigoQuandoSemSmtp;
     }
 
     public AuthResponse registrar(RegistroRequest request) {
@@ -51,23 +75,86 @@ public class AuthService {
         Usuario usuario = usuarioRepository.findByEmail(request.email().trim().toLowerCase())
                 .orElseThrow(() -> new RegraNegocioException("Email ou senha invalidos"));
 
-        if (!passwordEncoder.matches(request.senha(), usuario.getSenha())) {
+        if (!senhaConfere(request.senha(), usuario)) {
             throw new RegraNegocioException("Email ou senha invalidos");
         }
 
         return toResponse(usuario);
     }
 
+    private boolean senhaConfere(String senhaInformada, Usuario usuario) {
+        String senhaSalva = usuario.getSenha();
+
+        if (senhaSalva == null || senhaSalva.isBlank()) {
+            return false;
+        }
+
+        if (senhaPareceBCrypt(senhaSalva)) {
+            return passwordEncoder.matches(senhaInformada, senhaSalva);
+        }
+
+        if (!senhaSalva.equals(senhaInformada)) {
+            return false;
+        }
+
+        usuario.setSenha(passwordEncoder.encode(senhaInformada));
+        usuarioRepository.save(usuario);
+        log.info("Senha legada migrada para BCrypt no login: usuarioId={}", usuario.getId());
+        return true;
+    }
+
+    private boolean senhaPareceBCrypt(String senha) {
+        return senha.startsWith("$2a$") || senha.startsWith("$2b$") || senha.startsWith("$2y$");
+    }
+
     public MensagemResponse solicitarRecuperacao(RecuperacaoSenhaRequest request) {
-        Usuario usuario = usuarioRepository.findByEmail(request.email().trim().toLowerCase())
-                .orElseThrow(() -> new RegraNegocioException("Email nao encontrado"));
+        MensagemResponse respostaUsuarioExisteOuEmail = new MensagemResponse(
+                "Se esse email existir em nosso cadastro, voce recebera as instrucoes para redefinir a senha. Verifique a caixa de entrada e spam.",
+                null);
+
+        Optional<Usuario> encontrado = usuarioRepository.findByEmail(request.email().trim().toLowerCase());
+        if (encontrado.isEmpty()) {
+            return respostaUsuarioExisteOuEmail;
+        }
+
+        Usuario usuario = encontrado.get();
         String token = UUID.randomUUID().toString().replace("-", "").substring(0, 8).toUpperCase();
 
         usuario.setResetToken(token);
         usuario.setResetTokenExpiracao(LocalDateTime.now().plusMinutes(20));
         usuarioRepository.save(usuario);
 
-        return new MensagemResponse("Codigo gerado para redefinir a senha. Em producao, este codigo seria enviado por email.", token);
+        if (mailSenderDisponivel() && tentarEnviarEmailRecuperacao(usuario.getEmail(), usuario.getNome(), token)) {
+            return respostaUsuarioExisteOuEmail;
+        }
+
+        if (exibirCodigoQuandoSemSmtp) {
+            return new MensagemResponse(
+                    "Codigo gerado (ambiente local sem servidor de email configurado — use apenas em desenvolvimento).",
+                    token);
+        }
+
+        log.warn("Recuperacao de senha sem SMTP: email={} codigo={} (nao retornado na resposta HTTP)", usuario.getEmail(), token);
+        return respostaUsuarioExisteOuEmail;
+    }
+
+    private boolean mailSenderDisponivel() {
+        return mailSender != null && StringUtils.hasText(mailFrom);
+    }
+
+    private boolean tentarEnviarEmailRecuperacao(String destino, String nome, String token) {
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(mailFrom.trim());
+            message.setTo(destino);
+            message.setSubject("SaldoX - Codigo para redefinir senha");
+            message.setText("Ola " + nome + ",\n\nSeu codigo para redefinir a senha e: "
+                    + token + "\n\nEle expira em 20 minutos.\nSe voce nao solicitou, ignore este email.");
+            mailSender.send(message);
+            return true;
+        } catch (MailException exception) {
+            throw new RegraNegocioException("Nao foi possivel enviar o email neste momento. Tente mais tarde.");
+        }
     }
 
     public MensagemResponse redefinirSenha(RedefinirSenhaRequest request) {

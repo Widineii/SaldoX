@@ -67,11 +67,10 @@ class TransacaoServiceTest {
                 null,
                 null,
                 null,
-                false,
-                1L
+                false
         );
 
-        var response = service.salvar(request);
+        var response = service.salvar(1L, request);
 
         assertThat(response.id()).isEqualTo(10L);
         assertThat(response.usuarioId()).isEqualTo(1L);
@@ -90,11 +89,10 @@ class TransacaoServiceTest {
                 null,
                 null,
                 null,
-                false,
-                99L
+                false
         );
 
-        assertThatThrownBy(() -> service.salvar(request))
+        assertThatThrownBy(() -> service.salvar(99L, request))
                 .isInstanceOf(RecursoNaoEncontradoException.class)
                 .hasMessage("Usuario nao encontrado");
     }

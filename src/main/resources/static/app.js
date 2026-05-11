@@ -11,6 +11,8 @@ const authForm = document.querySelector("#authForm");
 const authNome = document.querySelector("#authNome");
 const authEmail = document.querySelector("#authEmail");
 const authSenha = document.querySelector("#authSenha");
+const authConfirmarSenha = document.querySelector("#authConfirmarSenha");
+const confirmarSenhaLabel = document.querySelector("#confirmarSenhaLabel");
 const nomeLabel = document.querySelector("#nomeLabel");
 const authSubmit = document.querySelector("#authSubmit");
 const alternarAuth = document.querySelector("#alternarAuth");
@@ -18,6 +20,7 @@ const recuperarSenhaBotao = document.querySelector("#recuperarSenhaBotao");
 const resetBox = document.querySelector("#resetBox");
 const resetToken = document.querySelector("#resetToken");
 const resetSenha = document.querySelector("#resetSenha");
+const resetConfirmarSenha = document.querySelector("#resetConfirmarSenha");
 const confirmarResetSenha = document.querySelector("#confirmarResetSenha");
 const authAjuda = document.querySelector("#authAjuda");
 const perfilAvatar = document.querySelector("#perfilAvatar");
@@ -68,7 +71,9 @@ const confirmarExclusao = document.querySelector("#confirmarExclusao");
 const cancelarExclusao = document.querySelector("#cancelarExclusao");
 const perfilNomeInput = document.querySelector("#perfilNomeInput");
 const perfilEmailInput = document.querySelector("#perfilEmailInput");
-const perfilSenhaInput = document.querySelector("#perfilSenhaInput");
+const perfilSenhaAtualInput = document.querySelector("#perfilSenhaAtualInput");
+const perfilSenhaNovaInput = document.querySelector("#perfilSenhaNovaInput");
+const perfilSenhaConfirmarInput = document.querySelector("#perfilSenhaConfirmarInput");
 const avatarInput = document.querySelector("#avatarInput");
 const emptyState = document.querySelector("#emptyState");
 const metaMensal = document.querySelector("#metaMensal");
@@ -195,11 +200,22 @@ function abrirBancoH2(event) {
 }
 
 function usuarioLogado() {
-    return Boolean(usuario?.usuarioId);
+    return Boolean(usuario?.token);
 }
 
 function emailPareceReal(email) {
     return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email);
+}
+
+function alternarVisibilidadeSenha(input, botao) {
+    if (!input || !botao) {
+        return;
+    }
+
+    const mostrar = input.type === "password";
+    input.type = mostrar ? "text" : "password";
+    botao.textContent = mostrar ? "Ocultar" : "Ver";
+    botao.setAttribute("aria-label", mostrar ? "Ocultar senha" : "Mostrar senha");
 }
 
 function atualizarPerfil() {
@@ -232,6 +248,12 @@ async function autenticar(event) {
         return;
     }
 
+    if (authModoRegistro && authSenha.value !== authConfirmarSenha.value) {
+        mostrarMensagem("As senhas precisam ser iguais para criar a conta.", "error");
+        authConfirmarSenha.focus();
+        return;
+    }
+
     const url = authModoRegistro ? api.authRegistrar : api.authLogin;
     const payload = authModoRegistro
         ? { nome: authNome.value.trim(), email: authEmail.value.trim(), senha: authSenha.value }
@@ -257,6 +279,10 @@ async function autenticar(event) {
         mostrarMensagem(authModoRegistro ? "Conta criada com sucesso." : "Login realizado com sucesso.");
         await carregarTransacoes();
     } catch (erro) {
+        if (!authModoRegistro) {
+            resetBox.hidden = true;
+            authAjuda.textContent = "Nao conseguiu entrar? Confira email/senha ou use Recuperar senha para gerar um codigo.";
+        }
         mostrarMensagem(erro.message || "Conta nao encontrada ou senha incorreta.", "error");
     }
 }
@@ -284,8 +310,13 @@ async function solicitarRecuperacaoSenha() {
         const dados = await resposta.json();
         resetBox.hidden = false;
         resetToken.value = dados.token || "";
-        setAuthHelpMessage("Codigo de recuperacao: ", dados.token || "");
-        mostrarMensagem("Codigo de recuperacao gerado.");
+        if (dados.token) {
+            setAuthHelpMessage("Codigo de recuperacao: ", dados.token);
+        } else {
+            authAjuda.textContent = dados.mensagem
+                || "Se o email existir no cadastro, verifique sua caixa de entrada e spam.";
+        }
+        mostrarMensagem(dados.mensagem || "Pedido registrado.");
     } catch (erro) {
         mostrarMensagem(erro.message, "error");
     }
@@ -294,6 +325,12 @@ async function solicitarRecuperacaoSenha() {
 async function confirmarNovaSenha() {
     if (!resetToken.value.trim() || resetSenha.value.length < 6) {
         mostrarMensagem("Informe o codigo e uma senha com pelo menos 6 caracteres.", "error");
+        return;
+    }
+
+    if (resetConfirmarSenha.value !== resetSenha.value) {
+        mostrarMensagem("Confirme a nova senha corretamente.", "error");
+        resetConfirmarSenha.focus();
         return;
     }
 
@@ -312,6 +349,7 @@ async function confirmarNovaSenha() {
         }
 
         resetSenha.value = "";
+        resetConfirmarSenha.value = "";
         resetToken.value = "";
         resetBox.hidden = true;
         mostrarMensagem("Senha redefinida. Agora voce pode entrar.");
@@ -323,6 +361,8 @@ async function confirmarNovaSenha() {
 function alternarModoAuth() {
     authModoRegistro = !authModoRegistro;
     nomeLabel.style.display = authModoRegistro ? "grid" : "none";
+    confirmarSenhaLabel.hidden = !authModoRegistro;
+    authConfirmarSenha.required = authModoRegistro;
     authSubmit.textContent = authModoRegistro ? "Criar conta" : "Entrar";
     alternarAuth.textContent = authModoRegistro ? "Ja tenho conta" : "Criar nova conta";
     recuperarSenhaBotao.style.display = authModoRegistro ? "none" : "block";
@@ -333,11 +373,12 @@ function alternarModoAuth() {
     authNome.value = "";
     authEmail.value = "";
     authSenha.value = "";
-    authSenha.autocomplete = "new-password";
+    authConfirmarSenha.value = "";
+    authSenha.autocomplete = authModoRegistro ? "new-password" : "current-password";
 }
 
 function queryTransacoes() {
-    const params = new URLSearchParams({ usuarioId: usuario.usuarioId });
+    const params = new URLSearchParams();
 
     if (filtroBusca.value.trim()) {
         params.set("busca", filtroBusca.value.trim());
@@ -624,6 +665,51 @@ function renderizarGraficoMensal(transacoes) {
     });
 }
 
+function calcularScoreFinanceiro(receitas, totalDespesas, transacoes, meta) {
+    if (transacoes.length === 0) {
+        return 100;
+    }
+
+    const saldo = receitas - totalDespesas;
+    const usoOrcamento = meta > 0 ? totalDespesas / meta : 0;
+    const pendentes = transacoes.filter((transacao) => ["PENDENTE", "ATRASADA"].includes(statusCalculado(transacao)));
+    const atrasadas = pendentes.filter((transacao) => statusCalculado(transacao) === "ATRASADA");
+    let score = 100;
+
+    if (receitas > 0 && totalDespesas > receitas) {
+        score -= Math.min(32, ((totalDespesas - receitas) / receitas) * 35);
+    }
+
+    if (usoOrcamento > 0.75) {
+        score -= Math.min(26, (usoOrcamento - 0.75) * 70);
+    }
+
+    score -= Math.min(18, pendentes.length * 4);
+    score -= Math.min(18, atrasadas.length * 9);
+
+    if (saldo > 0 && usoOrcamento <= 0.75 && atrasadas.length === 0) {
+        score += 4;
+    }
+
+    return Math.max(0, Math.min(100, Math.round(score)));
+}
+
+function textoScoreFinanceiro(score) {
+    if (score >= 85) {
+        return "Otimo controle no filtro atual.";
+    }
+
+    if (score >= 65) {
+        return "Bom cenario, com pontos para acompanhar.";
+    }
+
+    if (score >= 45) {
+        return "Atencao ao orcamento e pendencias.";
+    }
+
+    return "Priorize reduzir gastos e quitar atrasos.";
+}
+
 function renderizarInsights(transacoes) {
     const receitas = transacoes
         .filter((transacao) => transacao.tipo === "RECEITA")
@@ -640,6 +726,9 @@ function renderizarInsights(transacoes) {
     const saldo = receitas - totalDespesas;
     const meta = Number(metaMensal.value || 2000);
     const percentual = Math.min((totalDespesas / meta) * 100, 100);
+    const score = calcularScoreFinanceiro(receitas, totalDespesas, transacoes, meta);
+    const scoreBarra = document.querySelector("#scoreFinanceiroBarra");
+    const scoreCard = scoreBarra?.closest(".health-card");
 
     maiorDespesa.textContent = maior ? formatoMoeda.format(maior.valor) : "R$ 0,00";
     maiorDespesaTexto.textContent = maior ? `${maior.descricao} em ${maior.categoria}` : "Nenhuma despesa encontrada.";
@@ -651,6 +740,10 @@ function renderizarInsights(transacoes) {
     orcamentoUsado.textContent = `${Math.round(percentual)}%`;
     orcamentoTexto.textContent = `${formatoMoeda.format(totalDespesas)} usados de ${formatoMoeda.format(meta)}.`;
     orcamentoBarra.style.width = `${percentual}%`;
+    document.querySelector("#scoreFinanceiro").textContent = score;
+    document.querySelector("#scoreFinanceiroTexto").textContent = textoScoreFinanceiro(score);
+    scoreBarra.style.width = `${score}%`;
+    scoreCard?.classList.toggle("is-warning", score < 65);
     dicaTexto.innerHTML = saldo >= 0
         ? "Bom resultado: mantenha as despesas abaixo das receitas e acompanhe as maiores categorias."
         : "Aten&ccedil;&atilde;o: suas despesas passaram das receitas no filtro atual.";
@@ -748,6 +841,22 @@ function renderizarAlertas(transacoes) {
     `).join("");
 }
 
+function payloadTransacaoApi(transacao, overrides = {}) {
+    const base = {
+        descricao: transacao.descricao,
+        valor: Number(transacao.valor),
+        data: transacao.data,
+        categoria: transacao.categoria,
+        tipo: transacao.tipo,
+        vencimento: transacao.vencimento || null,
+        status: transacao.status || "PAGA",
+        parcelaAtual: transacao.parcelaAtual ?? null,
+        totalParcelas: transacao.totalParcelas ?? null,
+        cartaoCredito: Boolean(transacao.cartaoCredito)
+    };
+    return { ...base, ...overrides };
+}
+
 function montarPayload() {
     return {
         descricao: descricao.value.trim(),
@@ -757,8 +866,9 @@ function montarPayload() {
         tipo: tipo.value,
         vencimento: vencimento.value || null,
         status: status.value,
-        cartaoCredito: cartaoCredito.checked,
-        usuarioId: usuario.usuarioId
+        parcelaAtual: null,
+        totalParcelas: null,
+        cartaoCredito: cartaoCredito.checked
     };
 }
 
@@ -850,7 +960,13 @@ async function carregarDadosExemplo() {
         await Promise.all(exemplos.map((transacao) => apiFetch(api.transacoes, {
             method: "POST",
             headers: jsonHeaders(),
-            body: JSON.stringify({ ...transacao, usuarioId: usuario.usuarioId })
+            body: JSON.stringify(payloadTransacaoApi({
+                ...transacao,
+                vencimento: null,
+                parcelaAtual: null,
+                totalParcelas: null,
+                cartaoCredito: false
+            }, { status: "PAGA" }))
         })));
         mostrarMensagem("Dados de exemplo carregados.");
         await carregarTransacoes();
@@ -883,7 +999,7 @@ async function marcarComoPago(transacao) {
         const resposta = await apiFetch(`${api.transacoes}/${transacao.id}`, {
             method: "PUT",
             headers: jsonHeaders(),
-            body: JSON.stringify({ ...transacao, status: "PAGA", usuarioId: usuario.usuarioId })
+            body: JSON.stringify(payloadTransacaoApi(transacao, { status: "PAGA" }))
         });
 
         if (!resposta.ok) {
@@ -910,7 +1026,7 @@ async function confirmarExclusaoPendente() {
     }
 
     try {
-        const resposta = await apiFetch(`${api.transacoes}/${idPendenteExclusao}?usuarioId=${usuario.usuarioId}`, {
+        const resposta = await apiFetch(`${api.transacoes}/${idPendenteExclusao}`, {
             method: "DELETE"
         });
 
@@ -996,19 +1112,9 @@ async function importarBackup(arquivo) {
         await Promise.all(transacoes.map((transacao) => apiFetch(api.transacoes, {
             method: "POST",
             headers: jsonHeaders(),
-            body: JSON.stringify({
-                descricao: transacao.descricao,
-                valor: transacao.valor,
-                data: transacao.data,
-                categoria: transacao.categoria,
-                tipo: transacao.tipo,
-                vencimento: transacao.vencimento || null,
-                status: transacao.status || "PAGA",
-                parcelaAtual: transacao.parcelaAtual || null,
-                totalParcelas: transacao.totalParcelas || null,
-                cartaoCredito: Boolean(transacao.cartaoCredito),
-                usuarioId: usuario.usuarioId
-            })
+            body: JSON.stringify(payloadTransacaoApi(transacao, {
+                status: transacao.status || "PAGA"
+            }))
         })));
 
         if (conteudo.metaMensal) {
@@ -1043,6 +1149,11 @@ authForm.addEventListener("submit", autenticar);
 alternarAuth.addEventListener("click", alternarModoAuth);
 recuperarSenhaBotao?.addEventListener("click", solicitarRecuperacaoSenha);
 confirmarResetSenha?.addEventListener("click", confirmarNovaSenha);
+document.querySelector("#toggleAuthSenha")?.addEventListener("click", () => alternarVisibilidadeSenha(authSenha, document.querySelector("#toggleAuthSenha")));
+document.querySelector("#toggleAuthConfirmarSenha")?.addEventListener("click", () => alternarVisibilidadeSenha(authConfirmarSenha, document.querySelector("#toggleAuthConfirmarSenha")));
+document.querySelector("#toggleResetSenha")?.addEventListener("click", () => alternarVisibilidadeSenha(resetSenha, document.querySelector("#toggleResetSenha")));
+document.querySelector("#togglePerfilSenhaAtual")?.addEventListener("click", () => alternarVisibilidadeSenha(perfilSenhaAtualInput, document.querySelector("#togglePerfilSenhaAtual")));
+document.querySelector("#togglePerfilSenhaNova")?.addEventListener("click", () => alternarVisibilidadeSenha(perfilSenhaNovaInput, document.querySelector("#togglePerfilSenhaNova")));
 form.addEventListener("submit", salvar);
 listaTransacoes?.addEventListener("click", (event) => {
     const botao = event.target.closest("button[data-action]");
@@ -1135,13 +1246,13 @@ document.querySelector("#sair").addEventListener("click", () => {
 });
 
 document.querySelector("#salvarPerfil")?.addEventListener("click", async () => {
-    const resposta = await apiFetch(`/auth/perfil/${usuario.usuarioId}`, {
+    const resposta = await apiFetch("/auth/perfil", {
         method: "PUT",
         headers: jsonHeaders(),
         body: JSON.stringify({
             nome: perfilNomeInput.value.trim() || usuario.nome,
             email: perfilEmailInput.value.trim() || usuario.email,
-            senha: perfilSenhaInput.value || null
+            senha: null
         })
     });
 
@@ -1152,9 +1263,62 @@ document.querySelector("#salvarPerfil")?.addEventListener("click", async () => {
 
     usuario = await resposta.json();
     localStorage.setItem("fintrackUsuario", JSON.stringify(usuario));
-    perfilSenhaInput.value = "";
     atualizarPerfil();
     mostrarMensagem("Perfil salvo no banco.");
+});
+
+document.querySelector("#salvarSenhaPerfil")?.addEventListener("click", async () => {
+    const senhaAtual = perfilSenhaAtualInput.value;
+    const senhaNova = perfilSenhaNovaInput.value;
+    const senhaConfirmada = perfilSenhaConfirmarInput.value;
+
+    if (!senhaAtual || senhaNova.length < 6) {
+        mostrarMensagem("Informe a senha atual e uma nova senha com pelo menos 6 caracteres.", "error");
+        return;
+    }
+
+    if (senhaNova !== senhaConfirmada) {
+        mostrarMensagem("A confirmacao da nova senha nao confere.", "error");
+        perfilSenhaConfirmarInput.focus();
+        return;
+    }
+
+    try {
+        const login = await fetch(api.authLogin, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: usuario.email, senha: senhaAtual })
+        });
+
+        if (!login.ok) {
+            mostrarMensagem("Senha atual incorreta.", "error");
+            return;
+        }
+
+        const resposta = await apiFetch("/auth/perfil", {
+            method: "PUT",
+            headers: jsonHeaders(),
+            body: JSON.stringify({
+                nome: usuario.nome,
+                email: usuario.email,
+                senha: senhaNova
+            })
+        });
+
+        if (!resposta.ok) {
+            mostrarMensagem(await mensagemErroApi(resposta, "Nao foi possivel atualizar a senha."), "error");
+            return;
+        }
+
+        usuario = await resposta.json();
+        localStorage.setItem("fintrackUsuario", JSON.stringify(usuario));
+        perfilSenhaAtualInput.value = "";
+        perfilSenhaNovaInput.value = "";
+        perfilSenhaConfirmarInput.value = "";
+        mostrarMensagem("Senha atualizada com sucesso.");
+    } catch (erro) {
+        mostrarMensagem("Nao foi possivel atualizar a senha.", "error");
+    }
 });
 
 avatarInput?.addEventListener("change", async () => {
@@ -1166,7 +1330,7 @@ avatarInput?.addEventListener("change", async () => {
     formData.append("avatar", avatarInput.files[0]);
 
     try {
-        const resposta = await apiFetch(`/auth/avatar/${usuario.usuarioId}`, {
+        const resposta = await apiFetch("/auth/avatar", {
             method: "POST",
             body: formData
         });

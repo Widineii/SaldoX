@@ -1,4 +1,4 @@
-# SaldoX
+﻿# SaldoX
 
 ![Status](https://img.shields.io/badge/status-portfolio%20ready-16a34a)
 ![Java](https://img.shields.io/badge/Java-17+-f97316)
@@ -13,7 +13,7 @@ O projeto simula uma aplicacao real para controle de receitas e despesas, com au
 
 ![Preview do dashboard SaldoX](docs/images/saldox-preview.png)
 
-## 🎬 Demo ao Vivo
+## ðŸŽ¬ Demo ao Vivo
 
 [![Deploy](https://img.shields.io/badge/Acessar%20Demo-Railway-0B47D9)](https://saldox.up.railway.app/)
 
@@ -80,7 +80,7 @@ Senha: 123456
 No Windows:
 
 ```bash
-mvnw.cmd spring-boot:run
+mvnw.cmd spring-boot:run -Dspring-boot.run.profiles=local
 ```
 
 Depois acesse:
@@ -92,7 +92,7 @@ http://localhost:8080
 Se a porta `8080` estiver ocupada:
 
 ```bash
-mvnw.cmd spring-boot:run -Dspring-boot.run.arguments=--server.port=8081
+mvnw.cmd spring-boot:run -Dspring-boot.run.profiles=local -Dspring-boot.run.arguments=--server.port=8081
 ```
 
 ## Rodar com PostgreSQL
@@ -113,6 +113,8 @@ DATABASE_PASSWORD=postgres
 
 ## Endpoints principais
 
+Nas rotas autenticadas, envie o header `Authorization: Bearer <jwt>` obtido em login ou cadastro.
+
 ```text
 POST   /auth/registrar
 POST   /auth/login
@@ -125,6 +127,9 @@ POST   /transacoes
 GET    /transacoes/{id}
 PUT    /transacoes/{id}
 DELETE /transacoes/{id}
+
+PUT    /auth/perfil
+POST   /auth/avatar          (multipart, campo avatar)
 
 GET    /dashboard/resumo
 
@@ -149,6 +154,8 @@ http://localhost:8080/openapi.yaml
 
 ## Exemplo de transacao
 
+O usuario Ã© definido pelo JWT; nÃ£o envie `usuarioId` no corpo.
+
 ```json
 {
   "descricao": "Mercado",
@@ -159,7 +166,35 @@ http://localhost:8080/openapi.yaml
 }
 ```
 
+## Ferramentas de banco H2 em producao
+
+- Com o profile **`postgres`** (por exemplo Render), `spring.h2.console.enabled` e `app.h2-viewer.enabled` ficam **desativados**, o console `/h2-console`, o viewer `/banco-h2.html` e a API `/banco-h2/**` retornam **403** mesmo autenticado.
+- Ambiente **local/dev** mantem visualizacao e endpoint do viewer habilitados quando iniciado com `-Dspring-boot.run.profiles=local` ou `-Dspring-boot.run.profiles=dev`.
+
+## Envio real de email (recuperacao de senha)
+
+Configure SMTP e remetente. Exemplo (`application.properties` ou variÃ¡veis):
+
+```text
+SPRING_MAIL_HOST=smtp.seuprovedor.com
+SPRING_MAIL_PORT=587
+SPRING_MAIL_USERNAME=...
+SPRING_MAIL_PASSWORD=...
+SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH=true
+SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE=true
+
+MAIL_FROM=no-reply@seudominio.com
+```
+
+Tambem aceita `APP_MAIL_FROM` como variavel de ambiente.
+
+Sem `spring.mail.host` e com `app.recuperacao.exibir-codigo-quando-sem-smtp=true` (padrao em ambiente H2 local), o codigo de recuperacao volta no campo `token` da resposta (apenas desenvolvimento). No profile **postgres**, essa opcao esta desligada: a resposta e sempre discreta e o codigo aparece somente nos **logs** do servidor (WARN) quando nao ha SMTP configurado â€” configure email em producao.
+
+A solicitacao **nao revela se o email existe** quando o modo seguro esta ativo; a mensagem (`mensagem`) e neutra, evitando enumeracao de contas.
+
 ## Banco H2
+
+Disponivel apenas quando a aplicacao e iniciada com profile local ou dev.
 
 Console:
 
@@ -180,6 +215,8 @@ Password: vazio
 ```bash
 mvnw.cmd test
 ```
+
+O repositorio inclui fluxo `.github/workflows/ci.yml` rodando `./mvnw test` em **push** e **pull_request** sobre `main`/`master`.
 
 ## Deploy
 
@@ -219,21 +256,31 @@ Este projeto mostra capacidade de construir uma aplicacao web completa, passando
 
 ## Melhorias implementadas nesta fase
 
-- ✅ Corrigido login do usuário demo com senha em BCrypt
-- ✅ Implementada recuperação de senha com código de redefinição
-- ✅ Adicionada segurança: usuário extraído do contexto JWT
-- ✅ Configurado PostgreSQL para produção em Railway
-- ✅ Pipeline CI/CD com GitHub Actions
-- ✅ Suporte a exportação de PDF com iText
-- ✅ Documentação e README atualizados
-- ✅ Usuário demo funcionando corretamente
+- Corrigido login do usuario demo com senha em BCrypt
+- Login migra senha legada para BCrypt automaticamente
+- Implementada recuperacao de senha com codigo de redefinicao
+- Adicionada seguranca: usuario extraido do contexto JWT
+- Configurado PostgreSQL para producao em Railway
+- Pipeline CI/CD com GitHub Actions
+- Suporte a exportacao de PDF com iText
+- Documentacao e README atualizados
+- Usuario demo funcionando corretamente
+- Projeto preparado para publicacao online com Docker e Render Blueprint
+- Documentacao Swagger/OpenAPI disponivel em `/swagger.html`
+- Teste de integracao com banco H2 em memoria
+- Mais cobertura nos controllers de auth, transacoes, dashboard e relatorios
+- Exportacao de relatorios em CSV pelo backend
+- API protegida: rotas de dados usam apenas o usuario do **JWT**, sem `usuarioId` na URL
+- Console H2 e viewer HTML da base desligados com seguranca por profile/propriedades quando nao usar H2
+- Recuperacao de senha com **SMTP opcional** (mensagem discreta quando email esta configurado)
+- CI com **GitHub Actions** (`./mvnw test`)
 
 ## Proximas melhorias
 
-- Implementar exportação em PDF no endpoint `/relatorios/pdf`
-- Remover `usuarioId` de todos os parâmetros de query
+- Publicar a URL final em uma conta Render/Railway (com variaveis de email se quiser recuperacao real)
+- Adicionar exportacao em PDF ou Excel
 - Testes E2E com Selenium
-- Adicionar paginação nos endpoints de listagem
+- Adicionar paginacao nos endpoints de listagem
 - Implementar cache com Redis
 
 ## Autor
@@ -243,3 +290,4 @@ Desenvolvido por **Widinei Martins**.
 - GitHub: [github.com/Widineii](https://github.com/Widineii)
 - LinkedIn: [linkedin.com/in/widineimartinsdev](https://www.linkedin.com/in/widineimartinsdev)
 - WhatsApp: [w.app/widineii](https://w.app/widineii)
+

@@ -4,6 +4,7 @@ import com.portifolio.fintrack.dto.TransacaoRequest;
 import com.portifolio.fintrack.dto.TransacaoResponse;
 import com.portifolio.fintrack.model.StatusTransacao;
 import com.portifolio.fintrack.model.TipoTransacao;
+import com.portifolio.fintrack.service.JwtService.JwtUsuario;
 import com.portifolio.fintrack.service.TransacaoService;
 import org.junit.jupiter.api.Test;
 
@@ -18,6 +19,8 @@ import static org.mockito.Mockito.when;
 
 class TransacaoControllerTest {
 
+    private static final JwtUsuario USUARIO = new JwtUsuario(1L, "ana@email.com");
+
     private final TransacaoService service = mock(TransacaoService.class);
     private final TransacaoController controller = new TransacaoController(service);
 
@@ -25,20 +28,20 @@ class TransacaoControllerTest {
     void deveCriarTransacao() {
         TransacaoRequest request = request();
         TransacaoResponse response = response();
-        when(service.salvar(request)).thenReturn(response);
+        when(service.salvar(1L, request)).thenReturn(response);
 
-        TransacaoResponse criada = controller.criar(request);
+        TransacaoResponse criada = controller.criar(USUARIO, request);
 
         assertThat(criada.descricao()).isEqualTo("Salario");
         assertThat(criada.tipo()).isEqualTo(TipoTransacao.RECEITA);
-        verify(service).salvar(request);
+        verify(service).salvar(1L, request);
     }
 
     @Test
     void deveListarTransacoesDoUsuario() {
         when(service.listar(1L, null, null, null)).thenReturn(List.of(response()));
 
-        List<TransacaoResponse> transacoes = controller.listar(1L, null, null, null);
+        List<TransacaoResponse> transacoes = controller.listar(USUARIO, null, null, null);
 
         assertThat(transacoes).hasSize(1);
         assertThat(transacoes.get(0).usuarioId()).isEqualTo(1L);
@@ -49,7 +52,7 @@ class TransacaoControllerTest {
     void deveBuscarTransacaoPorId() {
         when(service.buscarPorId(10L, 1L)).thenReturn(response());
 
-        TransacaoResponse encontrada = controller.buscar(10L, 1L);
+        TransacaoResponse encontrada = controller.buscar(USUARIO, 10L);
 
         assertThat(encontrada.id()).isEqualTo(10L);
         verify(service).buscarPorId(10L, 1L);
@@ -58,17 +61,17 @@ class TransacaoControllerTest {
     @Test
     void deveAtualizarTransacao() {
         TransacaoRequest request = request();
-        when(service.atualizar(10L, request)).thenReturn(response());
+        when(service.atualizar(10L, 1L, request)).thenReturn(response());
 
-        TransacaoResponse atualizada = controller.atualizar(10L, request);
+        TransacaoResponse atualizada = controller.atualizar(USUARIO, 10L, request);
 
         assertThat(atualizada.descricao()).isEqualTo("Salario");
-        verify(service).atualizar(10L, request);
+        verify(service).atualizar(10L, 1L, request);
     }
 
     @Test
     void deveDeletarTransacao() {
-        controller.deletar(10L, 1L);
+        controller.deletar(USUARIO, 10L);
 
         verify(service).deletar(10L, 1L);
     }
@@ -84,8 +87,7 @@ class TransacaoControllerTest {
                 StatusTransacao.PAGA,
                 null,
                 null,
-                false,
-                1L
+                false
         );
     }
 

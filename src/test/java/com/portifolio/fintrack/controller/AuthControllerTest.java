@@ -8,6 +8,7 @@ import com.portifolio.fintrack.dto.RecuperacaoSenhaRequest;
 import com.portifolio.fintrack.dto.RedefinirSenhaRequest;
 import com.portifolio.fintrack.dto.RegistroRequest;
 import com.portifolio.fintrack.service.AuthService;
+import com.portifolio.fintrack.service.JwtService.JwtUsuario;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -17,6 +18,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class AuthControllerTest {
+
+    private static final JwtUsuario USUARIO = new JwtUsuario(1L, "ana@email.com");
 
     private final AuthService authService = mock(AuthService.class);
     private final AuthController controller = new AuthController(authService);
@@ -65,7 +68,7 @@ class AuthControllerTest {
         when(authService.atualizarPerfil(1L, request))
                 .thenReturn(new AuthResponse(1L, "Ana Maria", "ana.maria@email.com", "jwt-token", null));
 
-        AuthResponse response = controller.atualizarPerfil(1L, request);
+        AuthResponse response = controller.atualizarPerfil(USUARIO, request);
 
         assertThat(response.nome()).isEqualTo("Ana Maria");
         assertThat(response.email()).isEqualTo("ana.maria@email.com");
@@ -78,7 +81,7 @@ class AuthControllerTest {
         when(authService.salvarAvatar(1L, avatar))
                 .thenReturn(new AuthResponse(1L, "Ana", "ana@email.com", "jwt-token", "data:image/png;base64,abc"));
 
-        AuthResponse response = controller.salvarAvatar(1L, avatar);
+        AuthResponse response = controller.salvarAvatar(USUARIO, avatar);
 
         assertThat(response.avatarUrl()).startsWith("data:image/png");
         verify(authService).salvarAvatar(1L, avatar);

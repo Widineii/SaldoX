@@ -1,6 +1,7 @@
 package com.portifolio.fintrack.controller;
 
 import com.portifolio.fintrack.model.TipoTransacao;
+import com.portifolio.fintrack.service.JwtService.JwtUsuario;
 import com.portifolio.fintrack.service.TransacaoService;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +13,8 @@ import static org.mockito.Mockito.when;
 
 class RelatorioControllerTest {
 
+    private static final JwtUsuario USUARIO = new JwtUsuario(1L, "ana@email.com");
+
     private final TransacaoService service = mock(TransacaoService.class);
     private final RelatorioController controller = new RelatorioController(service);
 
@@ -20,7 +23,7 @@ class RelatorioControllerTest {
         String csv = "Data,Descricao\n2026-05-01,Salario\n";
         when(service.exportarCsv(1L, "sal", TipoTransacao.RECEITA, "2026-05")).thenReturn(csv);
 
-        ResponseEntity<String> response = controller.exportarCsv(1L, "sal", TipoTransacao.RECEITA, "2026-05");
+        ResponseEntity<String> response = controller.exportarCsv(USUARIO, "sal", TipoTransacao.RECEITA, "2026-05");
 
         assertThat(response.getBody()).isEqualTo(csv);
         assertThat(response.getHeaders().getContentDisposition().getFilename()).isEqualTo("saldox-relatorio.csv");

@@ -29,8 +29,8 @@ public class TransacaoService {
         this.usuarioRepository = usuarioRepository;
     }
 
-    public TransacaoResponse salvar(TransacaoRequest request) {
-        Usuario usuario = buscarUsuario(request.usuarioId());
+    public TransacaoResponse salvar(Long usuarioId, TransacaoRequest request) {
+        Usuario usuario = buscarUsuario(usuarioId);
 
         Transacao transacao = new Transacao();
         preencherTransacao(transacao, request, usuario);
@@ -57,9 +57,9 @@ public class TransacaoService {
         return toResponse(buscarTransacaoDoUsuario(id, usuarioId));
     }
 
-    public TransacaoResponse atualizar(Long id, TransacaoRequest request) {
-        Transacao transacao = buscarTransacaoDoUsuario(id, request.usuarioId());
-        Usuario usuario = buscarUsuario(request.usuarioId());
+    public TransacaoResponse atualizar(Long id, Long usuarioId, TransacaoRequest request) {
+        Transacao transacao = buscarTransacaoDoUsuario(id, usuarioId);
+        Usuario usuario = buscarUsuario(usuarioId);
         preencherTransacao(transacao, request, usuario);
 
         return toResponse(transacaoRepository.save(transacao));

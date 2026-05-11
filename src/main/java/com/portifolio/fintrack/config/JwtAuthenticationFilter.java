@@ -33,11 +33,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (authorization != null && authorization.startsWith("Bearer ")) {
             jwtService.validar(authorization.substring(7)).ifPresent(usuario -> {
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                        usuario.email(),
+                        usuario,
                         null,
                         List.of()
                 );
-                authentication.setDetails(usuario);
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             });
         }

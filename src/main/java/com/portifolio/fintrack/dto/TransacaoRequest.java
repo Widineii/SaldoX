@@ -34,9 +34,6 @@ public record TransacaoRequest(
 
         Integer totalParcelas,
 
-        Boolean cartaoCredito,
-
-        @NotNull(message = "O usuarioId e obrigatorio")
-        Long usuarioId
+        Boolean cartaoCredito
 ) {
 }

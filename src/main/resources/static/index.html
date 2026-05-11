@@ -31,15 +31,32 @@
             </label>
 
             <label>Senha
-                <input id="authSenha" type="password" name="saldox_senha" placeholder="Digite sua senha" autocomplete="new-password" required>
+                <div class="password-field">
+                    <input id="authSenha" type="password" name="saldox_senha" placeholder="Digite sua senha" autocomplete="current-password" required>
+                    <button id="toggleAuthSenha" class="ghost-icon" type="button" aria-label="Mostrar senha">Ver</button>
+                </div>
             </label>
 
-            <button id="authSubmit" type="submit">Entrar</button>
-            <button id="recuperarSenhaBotao" class="demo-button" type="button">Recuperar senha</button>
-            <button id="alternarAuth" class="link-button" type="button">Criar nova conta</button>
+            <label id="confirmarSenhaLabel" hidden>Confirmar senha
+                <div class="password-field">
+                    <input id="authConfirmarSenha" type="password" name="saldox_confirmar_senha" placeholder="Repita a senha" autocomplete="new-password">
+                    <button id="toggleAuthConfirmarSenha" class="ghost-icon" type="button" aria-label="Mostrar confirmacao de senha">Ver</button>
+                </div>
+            </label>
+
+            <div class="auth-actions">
+                <button id="authSubmit" type="submit">Entrar</button>
+                <button id="recuperarSenhaBotao" class="demo-button" type="button">Recuperar senha</button>
+                <button id="alternarAuth" class="link-button" type="button">Criar nova conta</button>
+            </div>
             <div id="resetBox" class="reset-box" hidden>
+                <p>Use o codigo gerado para definir uma nova senha.</p>
                 <input id="resetToken" type="text" placeholder="Codigo recebido">
-                <input id="resetSenha" type="password" placeholder="Nova senha">
+                <div class="password-field">
+                    <input id="resetSenha" type="password" placeholder="Nova senha">
+                    <button id="toggleResetSenha" class="ghost-icon" type="button" aria-label="Mostrar nova senha">Ver</button>
+                </div>
+                <input id="resetConfirmarSenha" type="password" placeholder="Confirmar nova senha">
                 <button id="confirmarResetSenha" type="button">Redefinir senha</button>
             </div>
             <small id="authAjuda">Entre com o email e senha cadastrados.</small>
@@ -312,6 +329,14 @@
                         <strong id="resultadoStatus">Equilibrado</strong>
                         <p id="resultadoTexto">Acompanhe receitas e despesas.</p>
                     </div>
+                    <div class="health-card">
+                        <small>Score financeiro</small>
+                        <strong id="scoreFinanceiro">100</strong>
+                        <p id="scoreFinanceiroTexto">Seu panorama aparece aqui.</p>
+                        <div class="score-meter" aria-hidden="true">
+                            <span id="scoreFinanceiroBarra"></span>
+                        </div>
+                    </div>
                 </div>
             </article>
 
@@ -423,13 +448,37 @@
                 <label>Email
                     <input id="perfilEmailInput" type="email">
                 </label>
-                <label>Nova senha
-                    <input id="perfilSenhaInput" type="password" placeholder="Opcional">
-                </label>
                 <label>Avatar
                     <input id="avatarInput" type="file" accept="image/*">
                 </label>
-                <button id="salvarPerfil" type="button">Salvar perfil</button>
+                <button id="salvarPerfil" type="button">Salvar dados do perfil</button>
+
+                <div class="security-card">
+                    <div class="security-head">
+                        <strong>Trocar senha</strong>
+                        <small>Confirme a senha atual para atualizar o acesso da conta.</small>
+                    </div>
+
+                    <label>Senha atual
+                        <div class="password-field">
+                            <input id="perfilSenhaAtualInput" type="password" autocomplete="current-password" placeholder="Digite sua senha atual">
+                            <button id="togglePerfilSenhaAtual" class="ghost-icon" type="button" aria-label="Mostrar senha atual">Ver</button>
+                        </div>
+                    </label>
+
+                    <label>Nova senha
+                        <div class="password-field">
+                            <input id="perfilSenhaNovaInput" type="password" autocomplete="new-password" placeholder="Digite a nova senha">
+                            <button id="togglePerfilSenhaNova" class="ghost-icon" type="button" aria-label="Mostrar nova senha do perfil">Ver</button>
+                        </div>
+                    </label>
+
+                    <label>Confirmar nova senha
+                        <input id="perfilSenhaConfirmarInput" type="password" autocomplete="new-password" placeholder="Repita a nova senha">
+                    </label>
+
+                    <button id="salvarSenhaPerfil" type="button">Atualizar senha</button>
+                </div>
             </div>
         </section>
 

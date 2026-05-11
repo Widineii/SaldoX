@@ -3,9 +3,10 @@ package com.portifolio.fintrack.controller;
 import com.portifolio.fintrack.dto.TransacaoRequest;
 import com.portifolio.fintrack.dto.TransacaoResponse;
 import com.portifolio.fintrack.model.TipoTransacao;
+import com.portifolio.fintrack.service.JwtService.JwtUsuario;
 import com.portifolio.fintrack.service.TransacaoService;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -33,32 +34,36 @@ public class TransacaoController {
     }
 
     @PostMapping
-    public TransacaoResponse criar(@Valid @RequestBody TransacaoRequest transacao) {
-        return service.salvar(transacao);
+    public TransacaoResponse criar(@AuthenticationPrincipal JwtUsuario usuario, @Valid @RequestBody TransacaoRequest transacao) {
+        return service.salvar(usuario.usuarioId(), transacao);
     }
 
     @GetMapping
     public List<TransacaoResponse> listar(
-            @RequestParam @NotNull Long usuarioId,
+            @AuthenticationPrincipal JwtUsuario usuario,
             @RequestParam(required = false) String busca,
             @RequestParam(required = false) TipoTransacao tipo,
             @RequestParam(required = false) String mes
     ) {
-        return service.listar(usuarioId, busca, tipo, mes);
+        return service.listar(usuario.usuarioId(), busca, tipo, mes);
     }
 
     @GetMapping("/{id}")
-    public TransacaoResponse buscar(@PathVariable Long id, @RequestParam @NotNull Long usuarioId) {
-        return service.buscarPorId(id, usuarioId);
+    public TransacaoResponse buscar(@AuthenticationPrincipal JwtUsuario usuario, @PathVariable Long id) {
+        return service.buscarPorId(id, usuario.usuarioId());
     }
 
     @PutMapping("/{id}")
-    public TransacaoResponse atualizar(@PathVariable Long id, @Valid @RequestBody TransacaoRequest transacao) {
-        return service.atualizar(id, transacao);
+    public TransacaoResponse atualizar(
+            @AuthenticationPrincipal JwtUsuario usuario,
+            @PathVariable Long id,
+            @Valid @RequestBody TransacaoRequest transacao
+    ) {
+        return service.atualizar(id, usuario.usuarioId(), transacao);
     }
 
     @DeleteMapping("/{id}")
-    public void deletar(@PathVariable Long id, @RequestParam @NotNull Long usuarioId) {
-        service.deletar(id, usuarioId);
+    public void deletar(@AuthenticationPrincipal JwtUsuario usuario, @PathVariable Long id) {
+        service.deletar(id, usuario.usuarioId());
     }
 }

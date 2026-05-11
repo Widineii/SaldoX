@@ -1,6 +1,7 @@
 HELP.md
 target/
-data/
+data/*.lock.db
+data/*.trace.db
 *.log
 server-*.log
 .mvn/wrapper/maven-wrapper.jar

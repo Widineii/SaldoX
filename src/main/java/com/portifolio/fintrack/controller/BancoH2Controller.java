@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.portifolio.fintrack.exception.RegraNegocioException;
 
+@Profile({"dev", "local"})
 @RestController
 public class BancoH2Controller {
 
@@ -19,7 +21,7 @@ public class BancoH2Controller {
 
     public BancoH2Controller(
             JdbcTemplate jdbcTemplate,
-            @Value("${app.h2-viewer.enabled:true}") boolean h2ViewerEnabled
+            @Value("${app.h2-viewer.enabled:false}") boolean h2ViewerEnabled
     ) {
         this.jdbcTemplate = jdbcTemplate;
         this.h2ViewerEnabled = h2ViewerEnabled;

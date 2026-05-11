@@ -8,10 +8,11 @@ import com.portifolio.fintrack.dto.RecuperacaoSenhaRequest;
 import com.portifolio.fintrack.dto.RedefinirSenhaRequest;
 import com.portifolio.fintrack.dto.RegistroRequest;
 import com.portifolio.fintrack.service.AuthService;
+import com.portifolio.fintrack.service.JwtService.JwtUsuario;
 import jakarta.validation.Valid;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -50,13 +51,13 @@ public class AuthController {
         return authService.redefinirSenha(request);
     }
 
-    @PutMapping("/perfil/{usuarioId}")
-    public AuthResponse atualizarPerfil(@PathVariable Long usuarioId, @Valid @RequestBody PerfilRequest request) {
-        return authService.atualizarPerfil(usuarioId, request);
+    @PutMapping("/perfil")
+    public AuthResponse atualizarPerfil(@AuthenticationPrincipal JwtUsuario usuario, @Valid @RequestBody PerfilRequest request) {
+        return authService.atualizarPerfil(usuario.usuarioId(), request);
     }
 
-    @PostMapping("/avatar/{usuarioId}")
-    public AuthResponse salvarAvatar(@PathVariable Long usuarioId, @RequestParam("avatar") MultipartFile avatar) {
-        return authService.salvarAvatar(usuarioId, avatar);
+    @PostMapping("/avatar")
+    public AuthResponse salvarAvatar(@AuthenticationPrincipal JwtUsuario usuario, @RequestParam("avatar") MultipartFile avatar) {
+        return authService.salvarAvatar(usuario.usuarioId(), avatar);
     }
 }

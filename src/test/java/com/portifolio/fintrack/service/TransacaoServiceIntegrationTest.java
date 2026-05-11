@@ -36,7 +36,7 @@ class TransacaoServiceIntegrationTest {
     void deveSalvarFiltrarResumirEExportarCsvComH2() {
         Usuario usuario = criarUsuario();
 
-        transacaoService.salvar(new TransacaoRequest(
+        transacaoService.salvar(usuario.getId(), new TransacaoRequest(
                 "Salario Maio",
                 BigDecimal.valueOf(5200),
                 LocalDate.of(2026, 5, 1),
@@ -46,10 +46,9 @@ class TransacaoServiceIntegrationTest {
                 StatusTransacao.PAGA,
                 null,
                 null,
-                false,
-                usuario.getId()
+                false
         ));
-        transacaoService.salvar(new TransacaoRequest(
+        transacaoService.salvar(usuario.getId(), new TransacaoRequest(
                 "Celular parcelado",
                 BigDecimal.valueOf(440),
                 LocalDate.of(2026, 5, 3),
@@ -59,8 +58,7 @@ class TransacaoServiceIntegrationTest {
                 StatusTransacao.PENDENTE,
                 1,
                 12,
-                true,
-                usuario.getId()
+                true
         ));
 
         List<TransacaoResponse> despesas = transacaoService.listar(usuario.getId(), "celular", TipoTransacao.DESPESA, "2026-05");

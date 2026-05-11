@@ -1,6 +1,7 @@
 package com.portifolio.fintrack.controller;
 
 import com.portifolio.fintrack.dto.ResumoFinanceiro;
+import com.portifolio.fintrack.service.JwtService.JwtUsuario;
 import com.portifolio.fintrack.service.TransacaoService;
 import org.junit.jupiter.api.Test;
 
@@ -12,6 +13,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class DashboardControllerTest {
+
+    private static final JwtUsuario USUARIO = new JwtUsuario(1L, "ana@email.com");
 
     private final TransacaoService service = mock(TransacaoService.class);
     private final DashboardController controller = new DashboardController(service);
@@ -26,7 +29,7 @@ class DashboardControllerTest {
         );
         when(service.calcularResumo(1L)).thenReturn(resumo);
 
-        ResumoFinanceiro response = controller.resumo(1L);
+        ResumoFinanceiro response = controller.resumo(USUARIO);
 
         assertThat(response.saldo()).isEqualByComparingTo("3800");
         assertThat(response.quantidadeTransacoes()).isEqualTo(2);
